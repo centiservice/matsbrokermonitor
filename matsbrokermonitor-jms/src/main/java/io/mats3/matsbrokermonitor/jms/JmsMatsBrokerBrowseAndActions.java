@@ -81,7 +81,8 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
         try {
             connection = _connectionFactory.createConnection();
             connection.start();
-            Session session = connection.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
             Queue queue = session.createQueue(queueId);
 
             // NOTICE: This is not optimal in any way, but to avoid premature optimizations and more complex code
@@ -117,11 +118,16 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
                 }
             }
             session.close();
-            connection.close();
             return deletedMessageIds;
         }
         catch (JMSException e) {
-            throw closeExceptionally(connection, e);
+            // To not close it twice (#2 in the finally):
+            Connection tempCon = connection;
+            connection = null;
+            throw closeExceptionally(tempCon, e);
+        }
+        finally {
+            closeConnectionIfNonNullIgnoreException(connection);
         }
     }
 
@@ -139,6 +145,7 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
             connection = _connectionFactory.createConnection();
             connection.start();
             Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
+
             Queue dlq = session.createQueue(deadLetterQueueId);
             MessageProducer genericProducer = session.createProducer(null);
 
@@ -199,11 +206,16 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
             }
             genericProducer.close();
             session.close();
-            connection.close();
             return reissuedMessageIds;
         }
         catch (JMSException e) {
-            throw closeExceptionally(connection, e);
+            // To not close it twice (#2 in the finally):
+            Connection tempCon = connection;
+            connection = null;
+            throw closeExceptionally(tempCon, e);
+        }
+        finally {
+            closeConnectionIfNonNullIgnoreException(connection);
         }
     }
 
@@ -249,7 +261,7 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
         try {
             connection = _connectionFactory.createConnection();
             connection.start();
-            Session session = connection.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Queue queue = session.createQueue(queueId);
             QueueBrowser browser = session.createBrowser(queue, jmsMessageSelector);
             @SuppressWarnings("unchecked")
@@ -260,9 +272,10 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
         catch (JMSException e) {
             throw closeExceptionally(connection, e);
         }
+        // NOTICE: NOT closing connection, as the Iterator needs it till it is closed!
     }
 
-    private BrokerIOException closeExceptionally(Connection connection, JMSException e) {
+    private static BrokerIOException closeExceptionally(Connection connection, JMSException e) {
         JMSException suppressed = null;
         if (connection != null) {
             try {
@@ -277,6 +290,19 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
             brokerIOException.addSuppressed(suppressed);
         }
         return brokerIOException;
+    }
+
+    private static void closeConnectionIfNonNullIgnoreException(Connection connection) {
+        if (connection == null) {
+            return;
+        }
+        try {
+            connection.close();
+        }
+        catch (JMSException e) {
+            log.warn("Got [" + e.getClass().getSimpleName() + "] when trying to close Connection [" + connection
+                    + "], ignoring.");
+        }
     }
 
     private static class MatsBrokerMessageIterableImpl implements MatsBrokerMessageIterable {

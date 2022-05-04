@@ -150,7 +150,7 @@ public class ActiveMqBrokerStatsQuerierImpl implements ActiveMqBrokerStatsQuerie
             _waitObject_And_ForceUpdateOutstandingCorrelationIds.notifyAll();
         }
         // Closing Connections for the receiver - they'll wake up from 'con.receive()'.
-        closeConnectionIgnoreException(_receiveDestinationsStatsReplyMessages_Connection);
+        closeConnectionIfNonNullIgnoreException(_receiveDestinationsStatsReplyMessages_Connection);
         // Check that all threads exit
         try {
             _sendStatsRequestMessages_Thread.join(TIMEOUT_MILLIS_GRACEFUL_THREAD_SHUTDOWN);
@@ -176,7 +176,7 @@ public class ActiveMqBrokerStatsQuerierImpl implements ActiveMqBrokerStatsQuerie
         _matsDestinationPrefix = matsDestinationPrefix;
     }
 
-    private void closeConnectionIgnoreException(Connection connection) {
+    private static void closeConnectionIfNonNullIgnoreException(Connection connection) {
         if (connection == null) {
             return;
         }
@@ -521,12 +521,12 @@ public class ActiveMqBrokerStatsQuerierImpl implements ActiveMqBrokerStatsQuerie
                 }
                 log.warn("Got a [" + t.getClass().getSimpleName() + "] in the query-loop."
                         + " Attempting to close JMS Connection if gotten, then chill-waiting, then trying again.", t);
-                closeConnectionIgnoreException(sendRequestMessages_Connection);
+                closeConnectionIfNonNullIgnoreException(sendRequestMessages_Connection);
                 chill(CHILL_MILLIS_WAIT_AFTER_THROWABLE_IN_RECEIVE_LOOPS);
             }
         }
         // To exit, we're signalled via interrupt - it is our job to close Connection (it is a local variable)
-        closeConnectionIgnoreException(sendRequestMessages_Connection);
+        closeConnectionIfNonNullIgnoreException(sendRequestMessages_Connection);
         log.info("Got asked to exit, and that we do!");
     }
 
@@ -753,7 +753,7 @@ public class ActiveMqBrokerStatsQuerierImpl implements ActiveMqBrokerStatsQuerie
                 }
                 log.warn("Got a [" + t.getClass().getSimpleName() + "] in the receive-loop."
                         + " Attempting to close JMS Connection if gotten, then chill-waiting, then trying again.", t);
-                closeConnectionIgnoreException(_receiveDestinationsStatsReplyMessages_Connection);
+                closeConnectionIfNonNullIgnoreException(_receiveDestinationsStatsReplyMessages_Connection);
                 chill(CHILL_MILLIS_WAIT_AFTER_THROWABLE_IN_RECEIVE_LOOPS);
             }
         }
