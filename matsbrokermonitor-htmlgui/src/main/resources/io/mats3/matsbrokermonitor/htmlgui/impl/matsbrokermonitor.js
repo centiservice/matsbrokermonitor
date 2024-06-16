@@ -1049,22 +1049,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // :: Adding copy button to all matsbm_box_call_or_state divs
     document.querySelectorAll('.matsbm_box_call_or_state').forEach((div) => {
+        // Skip divs that have the matsbm_no_copy class
+        if (div.classList.contains('matsbm_no_copy')) {
+            return;
+        }
+
         const button = document.createElement('button');
-        button.innerHTML = '<svg class="matsbm_button_icon"><use xlink:href="#clone" /></svg>';
+        button.innerHTML = '<svg class="matsbm_button_icon"><use xlink:href="#copy" /></svg>';
         button.className = 'matsbm_button_copy';
+        div.appendChild(button);
 
         button.addEventListener('click', () => {
-            div.querySelector('.matsbm_button_copy').innerHTML = '<svg class="matsbm_button_icon"><use xlink:href="#check" /></svg>';
-            div.querySelector('.matsbm_button_copy').classList.add('matsbm_button_copied');
+            button.innerHTML = '<svg class="matsbm_button_icon"><use xlink:href="#check" /></svg>';
+            button.classList.add('matsbm_button_copied');
             const text = div.querySelector('.matsbm_box_call_or_state_div').innerHTML;
             navigator.clipboard.writeText(text);
 
             setTimeout(function () {
-                div.querySelector(".matsbm_button_copy").innerHTML = '<svg class="matsbm_button_icon"><use xlink:href="#clone" /></svg>';
-                div.querySelector('.matsbm_button_copy').classList.remove('matsbm_button_copied');
-            }, 2000);
+                button.innerHTML = '<svg class="matsbm_button_icon"><use xlink:href="#copy" /></svg>';
+                button.classList.remove('matsbm_button_copied');
+            }, 750);
         });
-
-        div.appendChild(button);
     });
 });

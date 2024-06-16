@@ -75,7 +75,7 @@
     margin: 0.5em 0 0 0;
     padding: 0 0.3em;
     background: #d0d0d0;
-    z-index: 1; /* Must be under modal-underlay */
+    z-index: 10; /* Must be under modal-underlay */
 }
 
 .matsbm_button {
@@ -225,7 +225,7 @@
     background-color: #008CBA;
     transition: background-color 0.7s, color 0.7s;
     position: relative;
-    z-index: 2;
+    z-index: 20;
 }
 
 .matsbm_button_show_non_zero {
@@ -233,7 +233,7 @@
     background-color: #008CBA;
     transition: background-color 0.7s, color 0.7s;
     position: relative;
-    z-index: 2;
+    z-index: 20;
 }
 
 .matsbm_button_show_bad {
@@ -241,12 +241,12 @@
     background-color: #e57f00;
     transition: background-color 0.7s, color 0.7s;
     position: relative;
-    z-index: 2;
+    z-index: 20;
 }
 
 .matsbm_button_active {
     box-shadow: 0 0 5px 7px rgba(0, 255, 0, 0.6);
-    z-index: 1;
+    z-index: 10;
 }
 
 
@@ -537,7 +537,6 @@
 #matsbm_table_browse_queue {
     width: 100%;
     border-collapse: collapse;
-    /*font-size: 0.9em;*/
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -769,6 +768,7 @@
     top: var(--matsbm-actionbuttons-sticky-adjust);
     background-color: #009879;
     color: #ffffff;
+    z-index: 1; /* Ensure it is higher than the state divs */
 }
 
 .matsbm_table_replytostack th, .matsbm_table_replytostack td {
@@ -796,7 +796,6 @@
 .matsbm_table_matstrace {
     height: 1px;
     border-collapse: collapse;
-    /*font-size: 0.9em;*/
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -898,30 +897,31 @@
 
 .matsbm_button_copy {
     position: absolute;
-    top: 0.2em;
+    display: grid;
+    top: 0.08em;
     right: 0.2em;
+    background: #fefefe;
+    padding: 1.8px;
     border: 1px solid;
-    border-radius: 5px;
-    background: none;
-    opacity: 0.3;
-    z-index: 100;
-    transition: all 0.2s;
+    border-radius: 4px;
+    opacity: 0.6;
 }
 
 .matsbm_button_copy:hover {
     opacity: 1;
+    color: green;
+    border-width: 2px;
+}
+
+.matsbm_button_icon {
+    width: 1.25em;
+    height: 1.12em;
+    transition: all 0.2s;
 }
 
 .matsbm_button_copied {
     opacity: 1;
     fill: #009879;
-}
-
-.matsbm_button_icon {
-    width: 1.5em;
-    height: 1.5em;
-    transform: translateY(0.2em);
-    transition: all 0.2s;
 }
 
 .matsbm_table_matstrace_dlqrow {
@@ -945,7 +945,7 @@
     visibility: hidden;
     transform: scaleX(1.1) scaleY(1.1);
     transition: visibility 0s linear 0.25s, opacity 0.25s 0s, transform 0.25s;
-    z-index: 2; /* Must be OVER button-row */
+    z-index: 30; /* Must be OVER button-row */
 }
 
 .matsbm_callmodalunderlay_visible {

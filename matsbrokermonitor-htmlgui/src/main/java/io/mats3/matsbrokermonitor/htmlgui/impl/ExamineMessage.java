@@ -207,17 +207,14 @@ public class ExamineMessage {
 
         // :: DLQ Exception, if any
 
-        // .. SVG-sprite: awesome-clone
-        // (from font-awesome, via https://leungwensen.github.io/svg-icon/#awesome)
+        // .. SVG-sprite: material-content-copy
+        // (from material-design, via https://leungwensen.github.io/svg-icon/#material)
         out.html("<svg display='none'>\n"
-                + "  <symbol viewBox='0 0 1792 1792' id='clone'>\n"
-                + "    <path d='M1664 1632V544q0-13-9.5-22.5T1632 512H544q-13 0-22.5 9.5T512 544v1088q0 13 9.5 22.5"
-                + "             t22.5 9.5h1088q13 0 22.5-9.5t9.5-22.5zm128-1088v1088q0 66-47 113t-113 47H544"
-                + "             q-66 0-113-47t-47-113V544q0-66 47-113t113-47h1088q66 0 113 47t47 113zm-384-384v160"
-                + "             h-128V160q0-13-9.5-22.5T1248 128H160q-13 0-22.5 9.5T128 160v1088q0 13 9.5 22.5t22.5 9.5"
-                + "             h160v128H160q-66 0-113-47T0 1248V160Q0 94 47 47T160 0h1088q66 0 113 47t47 113z'/>"
+                + "  <symbol viewBox='0 0 38 44' id='copy'>\n"
+                + "    <path d='M28 0H4C1.79 0 0 1.79 0 4v28h4V4h24V0zm6 8H12c-2.21 0-4 1.79-4 4v28c0 2.21 1.79 4 4"
+                + "             4h22c2.21 0 4-1.79 4-4V12c0-2.21-1.79-4-4-4zm0 32H12V12h22v28z'/>"
                 + "  </symbol>"
-                + "</svg>");
+                + "</svg>\n");
 
         // .. SVG-sprite: awesome-check
         // (from font-awesome, via https://leungwensen.github.io/svg-icon/#awesome)
@@ -226,7 +223,7 @@ public class ExamineMessage {
                 + "   <path d='M1550 232q0 40-28 68l-724 724-136 136q-28 28-68 28t-68-28l-136-136L28 662Q0 634 0 594"
                 + "            t28-68l136-136q28-28 68-28t68 28l294 295 656-657q28-28 68-28t68 28l136 136q28 28 28 68z'/>"
                 + "  </symbol>"
-                + "</svg>");
+                + "</svg>\n");
 
         part_DlqInformation(out, matsBrokerDestination.getStageDestinationType().orElse(UNKNOWN), msgRepr, matsTrace);
 
@@ -539,8 +536,12 @@ public class ExamineMessage {
         out.html("<div id='matsbm_part_state_and_message'>\n");
         out.html("<h2>Incoming State and Message</h2><br>\n");
         // State:
-        out.html("<div class='matsbm_box_call_or_state'>\n");
         Optional<? extends StackState<?>> currentStateO = matsTrace.getCurrentState();
+        out.html("<div class='matsbm_box_call_or_state");
+        if (currentStateO.isEmpty()) {
+            out.html(" matsbm_no_copy");
+        }
+        out.html("'>\n");
         if (currentStateO.isPresent()) {
             out.html("Incoming <b>State</b>: ");
             out_displaySerializedRepresentation(out, currentStateO.get().getState());
@@ -1134,7 +1135,7 @@ public class ExamineMessage {
             // State:
             if ((matsTrace.getKeepTrace() == KeepMatsTrace.FULL)
                     || (i == (callFlow.size() - 1))) {
-                out.html("<div class='matsbm_box_call_or_state'>\n");
+
 
                 Object state;
                 // ?: Is this the last call?
@@ -1148,6 +1149,13 @@ public class ExamineMessage {
                     StackState<?> stackState = callToState.get(currentCall);
                     state = stackState != null ? stackState.getState() : null;
                 }
+
+                out.html("<div class='matsbm_box_call_or_state");
+                if (state == null) {
+                    out.html(" matsbm_no_copy");
+                }
+                out.html("'>\n");
+
                 if (state != null) {
                     out.html("Incoming state: ");
                     out_displaySerializedRepresentation(out, state);
