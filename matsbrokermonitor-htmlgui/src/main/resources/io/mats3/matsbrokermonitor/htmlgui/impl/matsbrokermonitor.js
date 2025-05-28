@@ -175,12 +175,11 @@ function matsbm_broker_overview_KeyListener(event) {
     if (name === "Escape" || name === "u") {
         matsbm_click("matsbm_button_forceupdate");
     }
-
     if (name === "a") {
         matsbm_click("matsbm_button_show_all");
     }
     if (name === "z") {
-        matsbm_click("matsbm_button_show_non_zero_destinations");
+        matsbm_click("matsbm_button_show_non_zero");
     }
     if (name === "b") {
         matsbm_click("matsbm_button_show_bad");
