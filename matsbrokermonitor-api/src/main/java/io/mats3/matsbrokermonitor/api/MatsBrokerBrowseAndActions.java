@@ -267,6 +267,9 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
 
     /**
      * The full message representation, with all of metadata, including the serialized MatsTrace.
+     * <p>
+     * <b>NOTE: The Mats3 specific getters below will return <code>null</code> if this is not a Mats3 message!</b> That
+     * is, if somehow non-Mats3 messages are present in a queue, there is no data available for them.
      */
     interface MatsBrokerMessageRepresentation {
         /**

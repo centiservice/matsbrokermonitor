@@ -11,7 +11,7 @@ import io.mats3.matsbrokermonitor.htmlgui.impl.MatsBrokerMonitorHtmlGuiImpl;
 import io.mats3.serial.MatsSerializer;
 
 /**
- * A HTML UX for the MatsBrokerMonitor system. Meant to be created as a singleton using the
+ * A HTML UI for the MatsBrokerMonitor system. Meant to be created as a singleton using the
  * {@link #create(MatsBrokerMonitor, MatsBrokerBrowseAndActions) create}-methods, and then reused. Is obviously
  * thread-safe, as it is meant to be used by multiple threads.
  * 
@@ -46,21 +46,21 @@ public interface MatsBrokerMonitorHtmlGui {
 
     /**
      * The embeddable HTML GUI - map this to GET, content type is <code>"text/html; charset=utf-8"</code>. This might
-     * via the browser call back to {@link #json(Appendable, Map, String, AccessControl)} - which you also must
-     * mount at (typically) the same URL (PUT and DELETEs go there, GETs go here).
+     * via the browser call back to {@link #json(Appendable, Map, String, AccessControl)} - which you also must mount at
+     * (typically) the same URL (GETs go here, PUT, POST and DELETE goes to json).
      */
     void html(Appendable out, Map<String, String[]> requestParameters, AccessControl ac)
             throws IOException, AccessDeniedException;
 
     /**
-     * The HTML GUI will invoke JSON-over-HTTP to the same URL it is located at - map this to PUT and DELETE, content
-     * type is <code>"application/json; charset=utf-8"</code>.
+     * The HTML GUI will invoke JSON-over-HTTP to the same URL it is located at - map this to PUT, POST and DELETE,
+     * content type is <code>"application/json; charset=utf-8"</code>.
      * <p>
      * NOTICE: If you need to change the JSON Path, i.e. the path which this GUI employs to do "active" operations, you
      * can do so by setting the JS global variable "matsbm_json_path" when outputting the HTML, overriding the default
      * which is to use the current URL path (i.e. the same as the GUI is served on). They may be on the same path since
-     * the HTML is served using GET, while the JSON uses PUT and DELETE with header "Content-Type: application/json".
-     * (Read the 'matsbrokermonitor.js' file for details.)
+     * the HTML is served using GET, while the JSON uses PUT, POST and DELETE. (Read the 'matsbrokermonitor.js' file for
+     * details.)
      */
     void json(Appendable out, Map<String, String[]> requestParameters, String requestBody, AccessControl ac)
             throws IOException, AccessDeniedException;
@@ -127,7 +127,9 @@ public interface MatsBrokerMonitorHtmlGui {
     }
 
     /**
-     * Quick way to get an {@link AccessControl} instance which allow all operations.
+     * Quick way to get an {@link AccessControl} instance which allow all views and operations. Relevant if the GUI is
+     * embedded in a dev and/or ops area which obviously already is protected by authentication and authorization, where
+     * all people that can see the GUI at all also should be allowed to see all information and do all operations.
      * 
      * @param username
      *            the username to use in the {@link AccessControl#username()} method.
@@ -171,9 +173,6 @@ public interface MatsBrokerMonitorHtmlGui {
             }
         };
     }
-
-    // TODO: LEGACY: Delete in 2025, ASAP.
-    AccessControl ACCESS_CONTROL_ALLOW_ALL = getAccessControlAllowAll("{unknown}");
 
     class AccessDeniedException extends RuntimeException {
         public AccessDeniedException(String message) {

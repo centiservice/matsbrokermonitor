@@ -342,9 +342,9 @@ public interface MatsBrokerMonitor extends Closeable {
         String getFqDestinationName();
 
         /**
-         * @return the raw destination name (called "physical name" in ActiveMQ code lingo), which isn't "fully
-         *         qualified", i.e. "mats.ServiceName.serviceMethodName" or "ActiveMQ.DLQ" - but not including any
-         *         scheme prefix like "queue://" or "topic://". To get whether it is a queue or topic, use
+         * @return the destination name (called "physical name" in ActiveMQ code lingo), which isn't "fully qualified",
+         *         i.e. "mats.ServiceName.serviceMethodName" or "ActiveMQ.DLQ" - but not including any scheme prefix
+         *         like "queue://" or "topic://". To get whether it is a queue or topic, use
          *         {@link #getDestinationType()}.
          * @see #getMatsStageId()
          */
@@ -361,11 +361,11 @@ public interface MatsBrokerMonitor extends Closeable {
         boolean isDlq();
 
         /**
-         * Returns whether this is the <i>Broker-specific Global DLQ</i>. If the broker isn't properly configured with a
-         * broker-specific <i>Individual Dead Letter Queue policy</i> where each queue gets its own DLQ (being the
-         * original queue name prefixed with "DLQ."), then there will be a Global DLQ. This is an unfortunate setup when
-         * using Mats3, since it will lump all processing errors for all stages, important or not, into a big heap, and
-         * this MatsBrokerMonitor cannot then nicely show where each problem is. If this destination represents the
+         * Returns whether this is the <i>Broker-specific <b>Global DLQ</b></i>. If the broker isn't properly configured
+         * with a broker-specific <i>Individual Dead Letter Queue policy</i> where each queue gets its own DLQ (being
+         * the original queue name prefixed with "DLQ."), then there will be a Global DLQ. This is an unfortunate setup
+         * when using Mats3, since it will lump all processing errors for all stages, important or not, into a big heap,
+         * and this MatsBrokerMonitor cannot then nicely show where each problem is. If this destination represents the
          * Global DLQ, then this method will return <code>true</code>. The method {@link #getMatsStageId()} will then
          * return {@link Optional#empty()}, while {@link #getDestinationName()} will be the actual DLQ name (e.g. for
          * ActiveMQ, it is <code>"ActiveMQ.DLQ"</code>, while for Artemis it is <code>"DLQ"</code>) - and the

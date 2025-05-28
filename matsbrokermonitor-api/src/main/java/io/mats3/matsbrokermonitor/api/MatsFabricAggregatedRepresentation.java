@@ -111,22 +111,27 @@ public interface MatsFabricAggregatedRepresentation {
     /**
      * Return the {@link MatsStageBrokerRepresentation} for the specified destinationName, or {@link Optional#empty()}
      * if no such Stage was found in the stack. Each Stage can have multiple Queues connected to it, most obviously the
-     * "standard" and "DLQ" queues, but indeed all specified by {@link StageDestinationType}. If you have a
-     * destinationName, you can find the Stage for it by using this method - and then you can get a reference to all the
-     * other queues connected to that stage.
+     * "standard" and "DLQ" queues, but indeed all specified by {@link StageDestinationType StageDestinationType}. If
+     * you have a destinationName, you can find the Stage for it by using this method - and then you can get a reference
+     * to all the other queues connected to that stage.
      * <p>
-     * Note: This method only searches for the Stage in the stacked representation (as gotten by
-     * {@link #stack(Collection)}) by comparing against the {@link MatsBrokerDestination#getDestinationName()} from the
-     * MatsBrokerDestination instances present in the stages represented in the stack. This means that if you have a
+     * <b>Important note:</b> This method only searches for the Stage in the stacked representation (as gotten by
+     * {@link #stack(Collection) stack(matsBrokerDestinations)}) by comparing against the
+     * {@link MatsBrokerDestination#getDestinationName() destination name} from the {@link MatsBrokerDestination
+     * MatsBrokerDestination} instances present in the stages represented in the stack. This means that if you have a
      * relevant destinationName for a particular Mats Stage (say e.g. the DLQ like "DLQ.SomeService.someMethod.stage1"
      * for a Stage), but that DLQ was not present in the broker when the stack was created, this method will return
-     * Optional.empty().
+     * {@code Optional.empty()}. Another way to put it is that this method does not "deconstruct" the destinationName to
+     * find the relevant StageId - it only searches through the MatsBrokerDestination instances <b>currently present</b>
+     * in the broker. This is relevant if the user e.g. accesses with a URL carrying a relevant destinationName, but the
+     * broker has e.g. been restarted, or the queue been GCed (due to zero messages over time) and the destinationName
+     * is not present in the broker anymore.
      * 
      * @param destinationName
      *            the DestinationName to find the Stage for, e.g. "mats.SomeService.someMethod.stage1", or
      *            "DLQ.mats.matssys.NPIA.SomeService.someMethod.stage1".
-     * @return the {@link MatsStageBrokerRepresentation} for the specified destinationName, or {@link Optional#empty()}
-     *         if no such Stage was found in the stack.
+     * @return the {@link MatsStageBrokerRepresentation MatsStageBrokerRepresentation} for the specified
+     *         destinationName, or {@link Optional#empty()} if no such Stage was found in the stack.
      */
     default Optional<MatsStageBrokerRepresentation> findStageForDestinationName(String destinationName) {
         // Go through all Endpoints, and then all Stages of each Endpoint, and then all Destinations of each Stage.
