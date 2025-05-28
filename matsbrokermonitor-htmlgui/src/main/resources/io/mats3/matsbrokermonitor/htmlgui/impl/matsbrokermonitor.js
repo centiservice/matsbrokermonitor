@@ -679,11 +679,21 @@ function matsbm_after_multiple_operation(action, actionPast, result) {
         + ". Time taken: " + result.timeTakenMillis + " ms."
         + (action !== 'delete' ? " <b>[Check console or log for new message ids!]</b>" : "");
     actionMessage.classList.add('matsbm_action_' + actionPast)
+    // Mark the affected messages in the table: Animation that visually "deletes them out", before reloading the page.
     for (const msgSysMsgId of Object.keys(result.affectedMessages)) {
         const row = document.getElementById('matsbm_msgid_' + msgSysMsgId);
         if (row) {
             row.classList.add('matsbm_' + actionPast);
-            row.nextElementSibling.classList.add('matsbm_' + actionPast);
+            const pairRow = row.nextElementSibling;
+            // ?: Is there a pair row? This should only ever be possible if you manage to affect a message that hasn't
+            // been loaded fully into the table yet. This is a "shouldn't really happen" situation, but just to be
+            // safe, we check.
+            if (pairRow) {
+                pairRow.classList.add('matsbm_' + actionPast);
+            }
+            else {
+                console.error("Couldn't find pair row for message row for msgSysMsgId [" + msgSysMsgId + "].");
+            }
         } else {
             console.error("Couldn't find message row for msgSysMsgId [" + msgSysMsgId + "].");
         }
@@ -702,13 +712,19 @@ function matsbm_after_multiple_operation(action, actionPast, result) {
             if (row) {
                 // Handle an annoying issue with Firefox, which won't transition height down to 0. (Works on Chrome)
                 let listener = () => {
-                    row.style.contentVisibility = 'hidden';
-                    row.nextElementSibling.style.contentVisibility = 'hidden';
                     row.removeEventListener('transitionend', listener);
+                    row.style.contentVisibility = 'hidden';
+                    // ?: Is there a pair row? (Handle same problem as mentioned above).
+                    if (row.nextElementSibling) {
+                        row.nextElementSibling.style.contentVisibility = 'hidden';
+                    }
                 }
                 row.addEventListener("transitionend", listener);
                 row.classList.add('matsbs_delete_mute_or_reissue');
-                row.nextElementSibling.classList.add('matsbs_delete_mute_or_reissue');
+                // ?: Is there a pair row? (Handle same problem as mentioned above).
+                if (row.nextElementSibling) {
+                    row.nextElementSibling.classList.add('matsbs_delete_mute_or_reissue');
+                }
             }
         }
         setTimeout(() => window.location.reload(), action === "reissue" ? 2000 : 1200);
