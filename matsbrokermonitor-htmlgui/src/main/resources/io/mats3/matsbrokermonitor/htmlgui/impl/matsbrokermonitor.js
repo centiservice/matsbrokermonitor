@@ -169,6 +169,13 @@ function matsbm_is_button_enabled(buttonId) {
 
 // ::: BROKER OVERVIEW
 
+// Called at bottom of Broker Overview HTML output
+function matsbm_broker_overview_view_loaded() {
+    // Focus the force update
+    document.getElementById("matsbm_button_forceupdate").focus({ focusVisible: true });
+}
+
+
 // Key Listener for Broker Overview
 function matsbm_broker_overview_KeyListener(event) {
     const name = event.key;
@@ -217,6 +224,9 @@ function matsbm_button_show_bad_destinations(event) {
 function matsbm_browse_queue_view_loaded() {
     matsbm_browse_queue_show_all_normal_buttons_hide_rest();
     matsbm_evaluate_checkall_and_buttons();
+
+    // Focus the force update
+    document.getElementById("matsbm_button_forceupdate").focus({ focusVisible: true });
 
     // Handle "pair rows" hover effect
     const firstRows = document.querySelectorAll('#matsbm_table_browse_queue tbody tr:nth-of-type(2n+1)');
@@ -339,9 +349,6 @@ function matsbm_browse_queue_show_all_normal_buttons_hide_rest() {
     matsbm_show("matsbm_button_forceupdate");
 
     matsbm_browse_queue_hide_rest_of_buttons();
-
-    // Focus the force update
-    document.getElementById("matsbm_button_forceupdate").focus({ focusVisible: true });
 }
 
 // :: COMMON CANCEL for REISSUE, MUTE and DELETE
@@ -735,6 +742,9 @@ function matsbm_after_multiple_operation(action, actionPast, result) {
 // Called at bottom of Examine Message HTML output
 function matsbm_examine_message_view_loaded() {
     matsbm_delete_single_cancel();
+
+    // Focus the "Go back to Browse Queue" button, to be as safe as possible.
+    document.getElementById("matsbm_back_browse_queue").focus({ focusVisible: true });
 }
 
 // .. Key Listener for Examine Message

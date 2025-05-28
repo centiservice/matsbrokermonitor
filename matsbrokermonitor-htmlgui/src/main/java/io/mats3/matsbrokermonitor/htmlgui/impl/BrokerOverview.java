@@ -635,6 +635,11 @@ class BrokerOverview {
             out.html("</div>\n");
         }
 
+        // :: Call into JavaScript to do any JS post-rendering, setting focus.
+        out.html("<script>\n");
+        out.html("matsbm_broker_overview_view_loaded();\n");
+        out.html("</script>\n");
+
         // Don't output last </div>, as caller does it.
     }
 

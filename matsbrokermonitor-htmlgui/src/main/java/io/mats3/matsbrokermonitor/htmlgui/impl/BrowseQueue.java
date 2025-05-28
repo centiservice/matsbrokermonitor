@@ -584,14 +584,15 @@ class BrowseQueue {
 
         // :: Call into JavaScript to set state for buttons, and update the "number of messages" text.
         out.html("<script>\n");
-        out.html("matsbm_browse_queue_view_loaded();\n");
         out.html("document.getElementById('matsbm_num_messages_shown').innerHTML = '");
         out.html("Browsing <b>").DATA(messageCount).html(" messages</b> directly from queue.");
         if ((messageCount > 100) || (messageCount != numberOfQueuedMessages)) {
             out.html(" <i><b>(Note: Our max browse is ").DATA(MAX_MESSAGES_BROWSER);
             out.html(", but the message broker might have a smaller max. ActiveMQ default is 400)</b></i>");
         }
-        out.html("';\n</script>\n");
+        out.html("';\n");
+        out.html("matsbm_browse_queue_view_loaded();\n");
+        out.html("</script>\n");
 
         // Don't output last </div>, as caller does it.
     }
