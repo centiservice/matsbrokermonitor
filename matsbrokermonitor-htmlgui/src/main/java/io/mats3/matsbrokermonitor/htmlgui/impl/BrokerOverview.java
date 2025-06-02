@@ -44,7 +44,8 @@ class BrokerOverview {
             Outputter out, Map<String, String[]> requestParameters, AccessControl ac)
             throws IOException {
         out.html("<div id='matsbm_page_broker_overview' class='matsbm_report'>\n");
-        out.html("<div class='matsbm_heading'>");
+        out.html("<div class='matsbm_top_menu matsbm_top_menu_overview'>\n");
+        out.html("<div class='matsbm_heading'>\n");
 
         Optional<BrokerSnapshot> snapshotO = matsBrokerMonitor.getSnapshot();
         if (snapshotO.isEmpty()) {
@@ -74,6 +75,10 @@ class BrokerOverview {
                 .stack(destinations);
 
         // ===== OVERALL FABRIC INFORMATION
+
+        // :: Placeholder for JavaScript to output messages
+        out.html("<span id='matsbm_action_message' class='matsbm_action_message matsbm_action_message_broker_overview'>"
+                + "</span>\n");
 
         out.html("Updated as of: <b>").DATA(Statics.formatTimestampSpan(snapshot.getLastUpdateLocalMillis()));
         if (snapshot.getLastUpdateBrokerMillis().isPresent()) {
@@ -216,7 +221,9 @@ class BrokerOverview {
         // -- done header
         out.html("</div>\n");
 
-        // ===== BUTTONS: View All vs View Bad
+        // ===== BUTTONS: View All, View non-zero & View Bad
+
+        out.html("<div id='matsbm_buttonrow' class='matsbm_buttonrow'>\n");
 
         // :: Decide whether to show all or bad only.
         // Start with deciding based on whether there are "bad" (DLQ or old)..
@@ -275,9 +282,8 @@ class BrokerOverview {
             }
         }
 
-        // Placeholder for JavaScript to output messages
-        out.html("<span id='matsbm_action_message'></span>");
-        out.html("<br>\n");
+        out.html("</div>\n"); // /matsbm_buttonrow
+        out.html("</div>\n"); // /matsbm_top_menu_overview
 
         // ===== TABLE OF CONTENTS
 

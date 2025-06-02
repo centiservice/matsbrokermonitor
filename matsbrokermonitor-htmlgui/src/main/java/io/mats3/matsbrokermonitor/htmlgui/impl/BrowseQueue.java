@@ -66,7 +66,7 @@ class BrowseQueue {
             MatsBrokerBrowseAndActions matsBrokerBrowseAndActions, List<? super MonitorAddition> monitorAdditions,
             Outputter out, String queueId, AccessControl ac, boolean autoJumpIfSingleMessage) throws IOException {
         out.html("<div id='matsbm_page_browse_queue' class='matsbm_report'>\n");
-        out.html("<div class='matsbm_actionbuttons'>\n");
+        out.html("<div class='matsbm_top_menu'>\n");
 
         out.html("<a id='matsbm_back_broker_overview' href='?'>Back to Broker Overview [Esc]</a><br>\n");
 
@@ -152,12 +152,18 @@ class BrowseQueue {
         }
         out.html("<br>\n");
 
+        // Placeholder for JavaScript to output messages
+        out.html("<span id='matsbm_action_message' class='matsbm_action_message matsbm_action_message_browse_queue'>"
+                + "</span>\n");
+
         // "Stack up" into a Mats Fabric representation
         MatsFabricAggregatedRepresentation stack = MatsFabricAggregatedRepresentation
                 .stack(matsBrokerDestinations);
 
         Optional<MatsStageBrokerRepresentation> stage_ = stack.findStageForDestinationName(matsBrokerDestination
                 .getDestinationName());
+
+        // :: OTHER QUEUES FOR STAGE
 
         if (stage_.isPresent()) {
             out.html("<div class='matsbm_other_queues_for_stage'>");
@@ -204,8 +210,7 @@ class BrowseQueue {
 
         // :: BUTTONS: REISSUE, MUTE, DELETE, FORCE UPDATE
 
-        // Create the 'QueueRep' instance
-        MatsBrokerDestination matsBrokerDestination_final = matsBrokerDestination;
+        out.html("<div id='matsbm_buttonrow' class='matsbm_buttonrow'>\n");
 
         // REISSUE AND MUTE selected:
         // ?: Is this a DLQ? (Both Normal and Muted DLQ)
@@ -330,6 +335,8 @@ class BrowseQueue {
                 .collect(Collectors.toList());
 
         // .. output any button-row HTML for the additions.
+
+        MatsBrokerDestination matsBrokerDestination_final = matsBrokerDestination;
         QueueRep queueRep = () -> matsBrokerDestination_final;
         AdditionContext addCtx = () -> ac;
         for (BrowseQueueAddition browseQueueAddition : browseQueueAdditions) {
@@ -338,11 +345,8 @@ class BrowseQueue {
                 out.html(columnHeadingHtml);
             }
         }
-
-        // Placeholder for JavaScript to output messages
-        out.html("<span id='matsbm_action_message'></span>");
-        out.html("<br>");
-        out.html("</div>\n"); // /matsbm_actionbuttons
+        out.html("</div>\n"); // /matsbm_buttonrow
+        out.html("</div>\n"); // /matsbm_top_menu
 
         out.html("<br>\n");
 

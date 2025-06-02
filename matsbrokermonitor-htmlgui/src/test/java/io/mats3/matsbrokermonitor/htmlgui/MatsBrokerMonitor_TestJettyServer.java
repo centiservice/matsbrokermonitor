@@ -212,7 +212,7 @@ public class MatsBrokerMonitor_TestJettyServer {
             monitorAdditions.add(new BrokerOverviewAddition() {
                 @Override
                 public String getButtonRowHtmlFor(AdditionContext ctx) {
-                    return " Testing dummy added buttons for [" + ctx.getAccessControl().username() + "]: "
+                    return "<span class='spacer'></span>Testing dummy added overview-contents for [" + ctx.getAccessControl().username() + "]: "
                             + "<input type='button' value='Type: Button' class='matsbm_button matsbm_button_blue'>"
                             + "</input>";
                 }
@@ -221,7 +221,7 @@ public class MatsBrokerMonitor_TestJettyServer {
                 @Override
                 public String getButtonRowHtmlFor(AdditionContext ctx) {
                     return "<a href='http://www.google.com' class='matsbm_button matsbm_button_yellow'>Link Button"
-                            + " <span class='matsbm_external_link_icon' /></a>";
+                            + " <span class='matsbm_external_link_icon'></span></a>";
                 }
             });
 
@@ -234,7 +234,8 @@ public class MatsBrokerMonitor_TestJettyServer {
                     int lastDot = destinationName.lastIndexOf('.');
                     String destinationNameChopped = lastDot == -1 ? destinationName
                             : destinationName.substring(lastDot + 1);
-                    return " Testing dummy added buttons for [" + ctx.getAccessControl().username() + "]: ";
+                    return "<span class='spacer'></span><span>Testing dummy added content for ["
+                            + ctx.getAccessControl().username() + "]</span>: ";
                 }
 
                 @Override
@@ -278,7 +279,8 @@ public class MatsBrokerMonitor_TestJettyServer {
             monitorAdditions.add(new ExamineMessageAddition() {
                 @Override
                 public String getButtonRowHtmlFor(AdditionContext ctx, MessageRep message) {
-                    return "<h2>Added h2-text for user [" + ctx.getAccessControl().username() + "]!!</h2>";
+                    return "<span class='spacer'></span><h2>Added h2-text very long indeed annoyingly wrappable even"
+                            + " longer test for user [" + ctx.getAccessControl().username() + "]!!</h2>";
                 }
             });
             monitorAdditions.add(new ExamineMessageAddition() {

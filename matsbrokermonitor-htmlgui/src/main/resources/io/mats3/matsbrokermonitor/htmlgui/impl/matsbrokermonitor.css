@@ -18,6 +18,7 @@
     font-size: 85%;
     line-height: var(--matsbm-line-height);
     color: #212529;
+    min-width: fit-content;
 }
 
 .matsbm_report h1, .matsbm_report h2, .matsbm_report h3, .matsbm_report h4 {
@@ -72,9 +73,9 @@
     background: #f0f0f0;
 }
 
-/* Common action BUTTONS */
+/* Common top-menu and BUTTONS (browse queue, examine queue) */
 
-.matsbm_actionbuttons { /* The "sticky" action buttons row at the top of the page */
+.matsbm_top_menu { /* The "sticky" action buttons row at the top of the page */
     position: sticky;
     border-radius: 5px;
     top: 0;
@@ -83,7 +84,19 @@
     padding: 0 0.3em;
     background: #d0d0d0;
     z-index: 10; /* Must be under modal-underlay */
+    white-space: nowrap;
 }
+
+.matsbm_buttonrow {
+    display: flex;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    align-items:center;
+    min-width: 100%;
+}
+
+.matsbm_buttonrow > *      { flex: 0 0 auto; }   /* buttons, spans, whatever… */
+.matsbm_buttonrow .spacer  { flex: 1 1 auto; }   /* this one grows! */
 
 .matsbm_button { /* Common button style, subtypes below */
     line-height: var(--matsbm-line-height);
@@ -172,7 +185,7 @@
     margin: 4px 0;
     max-width: 0;
     transform: scaleX(0);
-    transition: background-color 0.7s, color 0.7s, transform 0.7s, padding 0.7s, margin 0.7s, max-width 0.7s
+    transition: background-color 0.7s, color 0.7s, transform 0.7s, padding 0.7s, margin 0.7s, max-width 0.35s
 }
 
 /* Buttons for MonitorAddition contract */
@@ -204,12 +217,26 @@
 
 /* Common Action message */
 
-#matsbm_action_message {
+.matsbm_action_message {
+    position: absolute;
+    right: 0.1em;
+    display: flex;
+    margin-top: 0.4em;
+    margin-right: 0.5em;
     font-size: 16pt;
     border-radius: 3px;
-    margin-left: 2em;
-    padding-left: 1em;
-    padding-right: 1em;
+}
+
+.matsbm_action_message_broker_overview {
+    top: 0em;
+}
+
+.matsbm_action_message_browse_queue {
+    top: 2.2em;
+}
+
+.matsbm_action_message_examine_message {
+    top: 3em;
 }
 
 .matsbm_action_reissued {
@@ -240,7 +267,10 @@
 /* PAGE: Broker Overview */
 /* ===================== */
 
-/* intro info */
+.matsbm_top_menu_overview {
+    position: relative;
+    height: 16em;
+}
 
 .matsbm_overview_message {
     margin: 0.8em 0 0.8em 0;

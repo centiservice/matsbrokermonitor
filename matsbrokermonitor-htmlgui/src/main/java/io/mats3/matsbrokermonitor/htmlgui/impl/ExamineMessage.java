@@ -55,10 +55,14 @@ public class ExamineMessage {
             List<? super MonitorAddition> monitorAdditions,
             Outputter out, String queueId, String messageSystemId, AccessControl ac) throws IOException {
         out.html("<div id='matsbm_page_examine_message' class='matsbm_report'>\n");
-        out.html("<div class='matsbm_actionbuttons'>\n");
+        out.html("<div class='matsbm_top_menu'>\n");
         out.html("<a id='matsbm_back_broker_overview' href='?'>Back to Broker Overview</a><br>\n");
         out.html("<a id='matsbm_back_browse_queue' href='?browse&destinationId=queue:").DATA(queueId)
                 .html("'>Back to Queue [Esc]</a>").html("<br>\n");
+
+        // :: Placeholder for JavaScript to output messages
+        out.html("<span id='matsbm_action_message' class='matsbm_action_message matsbm_action_message_examine_message'>"
+                + "</span>\n");
 
         // :: Verify that we have the queue in the stats
         // (Otherwise we'll make the queue by just browsing for the message)
@@ -152,6 +156,8 @@ public class ExamineMessage {
 
         // :: ACTION BUTTONS: REISSUE, MUTE, DELETE
 
+        out.html("<div id='matsbm_buttonrow' class='matsbm_buttonrow'>\n");
+
         // ?: Is this a DLQ? (Both Normal and Muted DLQ)
         if (matsBrokerDestination.isDlq()) {
             // -> Yes, DLQ, so output Reissue button
@@ -221,9 +227,8 @@ public class ExamineMessage {
                 }
             }
         }
-        out.html("<span id='matsbm_action_message'></span>");
-        out.html("</div>");
-        out.html("<br>");
+        out.html("</div>"); // /matsbm_buttonrow
+        out.html("</div>"); // /matsbm_top_menu
 
         // :: FLOW AND MESSAGE PROPERTIES
 

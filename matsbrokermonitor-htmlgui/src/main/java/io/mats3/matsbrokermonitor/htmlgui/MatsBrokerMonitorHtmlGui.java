@@ -89,13 +89,15 @@ public interface MatsBrokerMonitorHtmlGui {
      * resource if relevant. This way, the page render won't be held back, and the user can start browsing the messages
      * while the status is fetched in the background.
      * <p>
-     * <b>CSS-classes for buttons, and "external link"-icon:</b> You can make a button, or a link rendered exactly like
-     * a button (to e.g. take the user to your logging system for this message's flow): There are a set of CSS classes
-     * that will make your button, or link, look like the other buttons in the Mats Broker Monitor GUI pages' button
-     * rows. These classes are "matsbm-button" paired with one of "matsbm-button-blue", "matsbm-button-green",
-     * "matsbm-button-yellow", and "matsbm-button-red". The blue is the standard "action" color. In addition, for links
-     * that send users to another page, an "external link" icon is provided, which you can add as such:
-     * <code>&lt;span class='matsbm_external_link_icon'&gt;&lt;/span&gt;</code>.
+     * <b>CSS-classes, and "external link"-icon:</b> You can make a button, or a link rendered exactly like a button (to
+     * e.g. take the user to your logging system for this message's flow): There are a set of CSS classes that will make
+     * your button, or link, look like the other buttons in the Mats Broker Monitor GUI pages' button rows. These
+     * classes are "matsbm-button" paired with one of "matsbm-button-blue", "matsbm-button-green",
+     * "matsbm-button-yellow", and "matsbm-button-red". The blue is the standard "action" color. In the button-row, if
+     * you want your additions to align to the right side, you can prefix the added HTML with
+     * "<code>&lt;span class='spacer'&gt;&lt;/span&gt;</code>". In addition, for links that send users to another page,
+     * an "external link" icon is provided, which you can add as such:
+     * "<code>&lt;span class='matsbm_external_link_icon'&gt;&lt;/span&gt;</code>".
      * <p>
      * <b>Tips for implementing "send to log system" button</b> (which probably is the most common and important
      * addition): You definitely want to add this as a link, not a JS button, as the user will typically want to open
@@ -169,7 +171,7 @@ public interface MatsBrokerMonitorHtmlGui {
     /**
      * For adding buttons to the button row of the Broker Overview page.
      * <p>
-     * <b>Important notice: These are fully raw HTML, with no escaping! You must HTML-escape all output values.
+     * <b>Important notice: These are fully raw HTML, with no escaping! You must HTML-escape all output values.</b>
      */
     interface BrokerOverviewAddition extends MonitorAddition {
         /**
@@ -233,7 +235,7 @@ public interface MatsBrokerMonitorHtmlGui {
      * For adding buttons to the button row of the Examine Message page.
      * <p>
      * <b>Important notice: These are fully raw HTML, with no escaping! You must HTML-escape all output values gotten
-     * from the {@link QueueRep} or {@link MessageRep} objects!</b>
+     * from the {@link MessageRep} objects!</b>
      */
     interface ExamineMessageAddition extends MonitorAddition {
         /**
@@ -248,6 +250,13 @@ public interface MatsBrokerMonitorHtmlGui {
         }
     }
 
+    /**
+     * Controls access to the different views and operations in the Mats Broker Monitor GUI. This is meant to be
+     * implemented by the application that embeds the Mats Broker Monitor GUI, and then passed to the GUI when it is
+     * created. The methods in this interface should return <code>true</code> if the user is allowed to see the
+     * overview, browse a queue, examine a message, reissue a message, mute a message, or delete a message,
+     * respectively. For a quick way to allow all operations, see {@link #getAccessControlAllowAll(String)}.
+     */
     interface AccessControl {
         default String username() {
             return "{unknown}";
