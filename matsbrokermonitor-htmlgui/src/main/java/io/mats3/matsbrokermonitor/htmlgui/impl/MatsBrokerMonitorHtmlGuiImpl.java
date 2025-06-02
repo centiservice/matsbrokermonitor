@@ -171,7 +171,7 @@ public class MatsBrokerMonitorHtmlGuiImpl implements MatsBrokerMonitorHtmlGui, S
             }
             // ----- Passed Access Control for overview, render it.
 
-            BrokerOverview.gui_BrokerOverview(_matsBrokerMonitor, outputter, requestParameters, ac);
+            BrokerOverview.gui_BrokerOverview(_matsBrokerMonitor, _monitorAdditions, outputter, requestParameters, ac);
         }
 
         long nanosTaken_fullRender = System.nanoTime() - nanosAsStart_fullRender;

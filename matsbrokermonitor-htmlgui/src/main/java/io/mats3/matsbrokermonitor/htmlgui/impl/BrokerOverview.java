@@ -11,9 +11,11 @@ import static io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestina
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor;
@@ -27,6 +29,9 @@ import io.mats3.matsbrokermonitor.api.MatsFabricAggregatedRepresentation.MatsEnd
 import io.mats3.matsbrokermonitor.api.MatsFabricAggregatedRepresentation.MatsEndpointGroupBrokerRepresentation;
 import io.mats3.matsbrokermonitor.api.MatsFabricAggregatedRepresentation.MatsStageBrokerRepresentation;
 import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.AccessControl;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.BrokerOverviewAddition;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition.AdditionContext;
 
 /**
  * @author Endre Stølsvik 2022-03-13 23:32 - http://stolsvik.com/, endre@stolsvik.com
@@ -35,8 +40,8 @@ class BrokerOverview {
 
     private static final long TOO_OLD = 10 * 60 * 1000;
 
-    static void gui_BrokerOverview(MatsBrokerMonitor matsBrokerMonitor, Outputter out,
-            Map<String, String[]> requestParameters, AccessControl ac)
+    static void gui_BrokerOverview(MatsBrokerMonitor matsBrokerMonitor, List<? super MonitorAddition> monitorAdditions,
+            Outputter out, Map<String, String[]> requestParameters, AccessControl ac)
             throws IOException {
         out.html("<div id='matsbm_page_broker_overview' class='matsbm_report'>\n");
         out.html("<div class='matsbm_heading'>");
@@ -237,23 +242,40 @@ class BrokerOverview {
 
         out.html("<input type='button' id='matsbm_button_show_all' value='Show All [a]'"
                 + " class='matsbm_button matsbm_button_show_all"
-                + (showWhat == ShowWhat.ALL ? " matsbm_button_active" : "")
+                + (showWhat == ShowWhat.ALL ? " matsbm_button_active_indicator" : "")
                 + "' onclick='matsbm_button_show_all_destinations(event)'>");
 
         out.html("<input type='button' id='matsbm_button_show_non_zero' value='Show >0 [z]'"
                 + " class='matsbm_button matsbm_button_show_non_zero"
-                + (showWhat == ShowWhat.NON_ZERO ? " matsbm_button_active" : "")
+                + (showWhat == ShowWhat.NON_ZERO ? " matsbm_button_active_indicator" : "")
                 + "' onclick='matsbm_button_show_non_zero_destinations(event)'>");
 
         out.html("<input type='button' id='matsbm_button_show_bad' value='Show Bad [b]'"
                 + " class='matsbm_button matsbm_button_show_bad"
-                + (showWhat == ShowWhat.BAD ? " matsbm_button_active" : "")
+                + (showWhat == ShowWhat.BAD ? " matsbm_button_active_indicator" : "")
                 + "' onclick='matsbm_button_show_bad_destinations(event)'>");
 
         out.html("<input type='button' id='matsbm_button_forceupdate' value='Update Now! [u]'"
                 + " class='matsbm_button matsbm_button_forceupdate"
                 + "' onclick='matsbm_button_forceupdate(event)'>");
 
+        // .. find the additions that are of type BrokerOverviewAddition, and collect them.
+        List<BrokerOverviewAddition> browseOverviewAdditions = monitorAdditions.stream()
+                .filter(o -> o instanceof BrokerOverviewAddition)
+                .map(o -> (BrokerOverviewAddition) o)
+                .collect(Collectors.toList());
+        // .. output any button-row HTML for the additions.
+        if (!browseOverviewAdditions.isEmpty()) {
+            AdditionContext addCtx = () -> ac;
+            for (BrokerOverviewAddition browseOverviewAddition : browseOverviewAdditions) {
+                String columnHeadingHtml = browseOverviewAddition.getButtonRowHtmlFor(addCtx);
+                if (columnHeadingHtml != null) {
+                    out.html(columnHeadingHtml);
+                }
+            }
+        }
+
+        // Placeholder for JavaScript to output messages
         out.html("<span id='matsbm_action_message'></span>");
         out.html("<br>\n");
 

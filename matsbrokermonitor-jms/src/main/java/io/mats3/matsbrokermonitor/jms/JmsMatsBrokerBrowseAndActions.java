@@ -70,8 +70,8 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
     }
 
     @Override
-    public Map<String, MatsBrokerMessageMetadata> deleteMessages(String queueId, Collection<String> messageSystemIds) {
-        if (queueId == null) {
+    public Map<String, MatsBrokerMessageMetadata> deleteMessages(String queueName, Collection<String> messageSystemIds) {
+        if (queueName == null) {
             throw new NullPointerException("queueId");
         }
         if (messageSystemIds == null) {
@@ -84,7 +84,7 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
             session = _jmsConnectionHolder.createSession(false);
             long nanosTaken_CreateSession = System.nanoTime() - nanosAtStart_CreateSession;
 
-            Queue queue = session.createQueue(queueId);
+            Queue queue = session.createQueue(queueName);
 
             // NOTICE: This is not optimal in any way, but to avoid premature optimizations and more complex code
             // before it is needed, I'll just let it be like this: Single receive and drop (delete), loop.
@@ -142,9 +142,9 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
     }
 
     @Override
-    public Map<String, MatsBrokerMessageMetadata> deleteAllMessages(String queueId, int limitMessages)
+    public Map<String, MatsBrokerMessageMetadata> deleteAllMessages(String queueName, int limitMessages)
             throws BrokerIOException {
-        if (queueId == null) {
+        if (queueName == null) {
             throw new NullPointerException("queueId");
         }
         if (limitMessages <= 0) {
@@ -157,7 +157,7 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
             session = _jmsConnectionHolder.createSession(false);
             long nanosTaken_CreateSession = System.nanoTime() - nanosAtStart_CreateSession;
 
-            Queue queue = session.createQueue(queueId);
+            Queue queue = session.createQueue(queueName);
 
             long nanosAtStart_CreateConsumerAndReceive = System.nanoTime();
             MessageConsumer consumer = session.createConsumer(queue);
@@ -218,46 +218,46 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
     }
 
     @Override
-    public Map<String, MatsBrokerMessageMetadata> reissueMessages(String deadLetterQueueId,
+    public Map<String, MatsBrokerMessageMetadata> reissueMessages(String deadLetterQueueName,
             Collection<String> messageSystemIds, String reissuingUsername) {
-        return retainingOperationOnMessages(RetainingMessageOperation.REISSUE, deadLetterQueueId, messageSystemIds,
+        return retainingOperationOnMessages(RetainingMessageOperation.REISSUE, deadLetterQueueName, messageSystemIds,
                 reissuingUsername, null, true);
     }
 
     @Override
-    public Map<String, MatsBrokerMessageMetadata> reissueAllMessages(String deadLetterQueueId, int limitMessages,
-            String username) throws BrokerIOException {
-        return retainingOperationOnAllMessages(RetainingMessageOperation.REISSUE, deadLetterQueueId, limitMessages,
+    public Map<String, MatsBrokerMessageMetadata> reissueAllMessages(String deadLetterQueueName, int limitMessages,
+                                                                     String username) throws BrokerIOException {
+        return retainingOperationOnAllMessages(RetainingMessageOperation.REISSUE, deadLetterQueueName, limitMessages,
                 username, null, true);
     }
 
     @Override
-    public Map<String, MatsBrokerMessageMetadata> muteMessages(String deadLetterQueueId,
+    public Map<String, MatsBrokerMessageMetadata> muteMessages(String deadLetterQueueName,
             Collection<String> messageSystemIds, String mutingUsername, String muteComment) throws BrokerIOException {
-        return retainingOperationOnMessages(RetainingMessageOperation.MUTE, deadLetterQueueId, messageSystemIds,
+        return retainingOperationOnMessages(RetainingMessageOperation.MUTE, deadLetterQueueName, messageSystemIds,
                 mutingUsername, muteComment, false);
     }
 
     @Override
-    public Map<String, MatsBrokerMessageMetadata> muteAllMessages(String deadLetterQueueId, int limitMessages,
-            String username, String muteComment) throws BrokerIOException {
-        return retainingOperationOnAllMessages(RetainingMessageOperation.MUTE, deadLetterQueueId, limitMessages,
+    public Map<String, MatsBrokerMessageMetadata> muteAllMessages(String deadLetterQueueName, int limitMessages,
+                                                                  String username, String muteComment) throws BrokerIOException {
+        return retainingOperationOnAllMessages(RetainingMessageOperation.MUTE, deadLetterQueueName, limitMessages,
                 username, muteComment, false);
     }
 
     @Override
-    public MatsBrokerMessageIterable browseQueue(String queueId)
+    public MatsBrokerMessageIterable browseQueue(String queueName)
             throws BrokerIOException {
-        return browse_internal(queueId, null);
+        return browse_internal(queueName, null);
     }
 
     @Override
-    public Optional<MatsBrokerMessageRepresentation> examineMessage(String queueId, String messageSystemId)
+    public Optional<MatsBrokerMessageRepresentation> examineMessage(String queueName, String messageSystemId)
             throws BrokerIOException {
         if (messageSystemId == null) {
             throw new NullPointerException("messageSystemId");
         }
-        try (MatsBrokerMessageIterableImpl iterable = browse_internal(queueId,
+        try (MatsBrokerMessageIterableImpl iterable = browse_internal(queueName,
                 "JMSMessageID = '" + messageSystemId + "'")) {
             Iterator<MatsBrokerMessageRepresentation> iter = iterable.iterator();
             if (!iter.hasNext()) {

@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -74,13 +73,13 @@ import io.mats3.localinspect.LocalHtmlInspectForMatsFactory;
 import io.mats3.localinspect.LocalStatsMatsInterceptor;
 import io.mats3.matsbrokermonitor.activemq.ActiveMqMatsBrokerMonitor;
 import io.mats3.matsbrokermonitor.api.MatsBrokerBrowseAndActions;
-import io.mats3.matsbrokermonitor.api.MatsBrokerBrowseAndActions.MatsBrokerMessageRepresentation;
 import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor;
 import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination;
 import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination.StageDestinationType;
 import io.mats3.matsbrokermonitor.broadcaster.MatsBrokerMonitorBroadcastAndControl;
 import io.mats3.matsbrokermonitor.broadcastreceiver.MatsBrokerMonitorBroadcastReceiver;
-import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.BrowseQueueTableAddition;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.BrokerOverviewAddition;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.BrowseQueueAddition;
 import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.ExamineMessageAddition;
 import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition;
 import io.mats3.matsbrokermonitor.htmlgui.SetupTestMatsEndpoints.DataTO;
@@ -204,44 +203,87 @@ public class MatsBrokerMonitor_TestJettyServer {
 
             // Put it in ServletContext, for shutdown
             sc.setAttribute("matsBrokerMonitor1", matsBrokerMonitor1);
+            sc.setAttribute("matsBrokerMonitor2", matsBrokerMonitor2);
 
+            // :: Create the MonitorAdditions
             List<? super MonitorAddition> monitorAdditions = new ArrayList<>();
-            monitorAdditions.add(new BrowseQueueTableAddition() {
-                @Override
-                public String getColumnHeadingHtml(String queueId) {
-                    // return null;
-                    return "<th>Added table heading: " + queueId.substring(0, 3) + "</th>";
-                }
 
+            // BrokerOverviewAdditions
+            monitorAdditions.add(new BrokerOverviewAddition() {
                 @Override
-                public String convertMessageToHtml(MatsBrokerMessageRepresentation message) {
-                    return "<td><div>Added table cell [" + (message.getMatsMessageId() != null
-                            ? message.getMatsMessageId().hashCode()
-                            : "null") + "]</div></td>";
+                public String getButtonRowHtmlFor(AdditionContext ctx) {
+                    return " Testing dummy added buttons for [" + ctx.getAccessControl().username() + "]: "
+                            + "<input type='button' value='Type: Button' class='matsbm_button matsbm_button_blue'>"
+                            + "</input>";
                 }
             });
-            monitorAdditions.add(new BrowseQueueTableAddition() {
+            monitorAdditions.add(new BrokerOverviewAddition() {
                 @Override
-                public String getColumnHeadingHtml(String queueId) {
+                public String getButtonRowHtmlFor(AdditionContext ctx) {
+                    return "<a href='http://www.google.com' class='matsbm_button matsbm_button_yellow'>Link Button"
+                            + " <span class='matsbm_external_link_icon' /></a>";
+                }
+            });
+
+            // BrowseQueueAdditions
+            monitorAdditions.add(new BrowseQueueAddition() {
+                @Override
+                public String getButtonRowHtmlFor(AdditionContext ctx, QueueRep queue) {
+                    String destinationName = queue.getMatsBrokerDestination().getDestinationName();
+                    // Chop from last dot to end, if present - otherwise full string
+                    int lastDot = destinationName.lastIndexOf('.');
+                    String destinationNameChopped = lastDot == -1 ? destinationName
+                            : destinationName.substring(lastDot + 1);
+                    return " Testing dummy added buttons for [" + ctx.getAccessControl().username() + "]: ";
+                }
+
+                @Override
+                public String getColumnHeadingHtmlFor(AdditionContext ctx, QueueRep queue) {
+                    String destinationName = queue.getMatsBrokerDestination().getDestinationName();
+                    // Chop from last dot to end, if present - otherwise full string
+                    int lastDot = destinationName.lastIndexOf('.');
+                    String destinationNameChopped = lastDot == -1 ? destinationName
+                            : destinationName.substring(lastDot + 1);
+                    return "<th>Added table heading: " + destinationNameChopped + "</th>";
+                }
+
+                @Override
+                public String getCellHtmlFor(AdditionContext ctx, MessageRep message) {
+                    String matsMessageId = message.getMatsBrokerMessageRepresentation().getMatsMessageId();
+                    return "<td><div>Added table cell [" + (matsMessageId != null ? matsMessageId.hashCode() : "null")
+                            + "]</div></td>";
+                }
+            });
+            monitorAdditions.add(new BrowseQueueAddition() {
+                @Override
+                public String getButtonRowHtmlFor(AdditionContext ctx, QueueRep queue) {
+                    return "<input type='button' value='Type: Button' class='matsbm_button matsbm_button_blue'></input>"
+                            + "<a href='http://www.google.com' class='matsbm_button matsbm_button_yellow'>Link Button"
+                            + " <span class='matsbm_external_link_icon' /></a>";
+                }
+
+                @Override
+                public String getColumnHeadingHtmlFor(AdditionContext ctx, QueueRep queue) {
                     return "<th style='background:blue'>Added: Head</th>";
                 }
 
                 @Override
-                public String convertMessageToHtml(MatsBrokerMessageRepresentation message) {
-                    // return null;
-                    return "<td style='background: green'><div>Added: Cell</div></td>";
-                }
-            });
-            monitorAdditions.add(new ExamineMessageAddition() {
-                @Override
-                public String convertMessageToHtml(MatsBrokerMessageRepresentation message) {
-                    return "<h2>Added h2-text!!</h2>";
+                public String getCellHtmlFor(AdditionContext ctx, MessageRep message) {
+                    return "<td style='background: green'><div>Added: Cell [" + ctx.getAccessControl().username()
+                            + "]</div></td>";
                 }
             });
 
+            // ExamineMessageAdditions
             monitorAdditions.add(new ExamineMessageAddition() {
                 @Override
-                public String convertMessageToHtml(MatsBrokerMessageRepresentation message) {
+                public String getButtonRowHtmlFor(AdditionContext ctx, MessageRep message) {
+                    return "<h2>Added h2-text for user [" + ctx.getAccessControl().username() + "]!!</h2>";
+                }
+            });
+            monitorAdditions.add(new ExamineMessageAddition() {
+                @Override
+                public String getButtonRowHtmlFor(AdditionContext ctx, MessageRep message) {
                     return "<input type='button' value='Added button!' class='matsbm_button'></input>";
                 }
             });
@@ -281,9 +323,8 @@ public class MatsBrokerMonitor_TestJettyServer {
             log.info("ServletContextListener.contextDestroyed(..): " + sce);
             log.info("  \\- ServletContext: " + sce.getServletContext());
             _matsFactory.stop(5000);
-            MatsBrokerMonitor matsBrokerMonitor = (MatsBrokerMonitor) sce.getServletContext()
-                    .getAttribute("matsBrokerMonitor1");
-            matsBrokerMonitor.close();
+            ((MatsBrokerMonitor) sce.getServletContext().getAttribute("matsBrokerMonitor1")).close();
+            ((MatsBrokerMonitor) sce.getServletContext().getAttribute("matsBrokerMonitor2")).close();
         }
     }
 
@@ -324,20 +365,6 @@ public class MatsBrokerMonitor_TestJettyServer {
             HealthCheckReportDto report = healthCheckRegistry
                     .createReport(new CreateReportRequest().forceFreshData(sync));
             HealthCheckTextOutput.printHealthCheckReport(report, out);
-        }
-    }
-
-    /**
-     * Servlet to shut down this JVM (<code>System.exit(0)</code>).
-     */
-    @WebServlet("/shutdown")
-    public static class ShutdownServlet extends HttpServlet {
-        @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
-            res.getWriter().println("Shutting down");
-
-            // Shut down the process
-            ForkJoinPool.commonPool().submit(() -> System.exit(0));
         }
     }
 
@@ -508,7 +535,6 @@ public class MatsBrokerMonitor_TestJettyServer {
                                     .request(dto, new StateTO(1, 2));
                         }
                     });
-
 
             // :: Send a message to the ActiveMQ and Artemis Global DLQs
             // Get JMS ConnectionFactory from ServletContext

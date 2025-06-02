@@ -33,6 +33,8 @@ import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination.St
 import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.AccessControl;
 import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.ExamineMessageAddition;
 import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition.AdditionContext;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition.MessageRep;
 import io.mats3.serial.MatsSerializer;
 import io.mats3.serial.MatsSerializer.DeserializedMatsTrace;
 import io.mats3.serial.MatsTrace;
@@ -81,9 +83,9 @@ public class ExamineMessage {
             return;
         }
 
-        Optional<MatsBrokerMessageRepresentation> matsBrokerMessageRepresentationO;
+        Optional<MatsBrokerMessageRepresentation> matsBrokerMessageRepresentation_;
         try {
-            matsBrokerMessageRepresentationO = matsBrokerBrowseAndActions.examineMessage(queueId, messageSystemId);
+            matsBrokerMessageRepresentation_ = matsBrokerBrowseAndActions.examineMessage(queueId, messageSystemId);
         }
         catch (BrokerIOException e) {
             out.html("<h1>Got BrokerIOException when trying to examine message!</h1><br>\n");
@@ -95,7 +97,7 @@ public class ExamineMessage {
             // Don't output last </div>, as caller does it.
             return;
         }
-        if (matsBrokerMessageRepresentationO.isEmpty()) {
+        if (matsBrokerMessageRepresentation_.isEmpty()) {
             out.html("</div>");
             out.html("<h1>No such message!</h1><br>\n");
             out.html("<b>MessageSystemId:</b> ").DATA(messageSystemId).html(".<br>\n");
@@ -104,6 +106,10 @@ public class ExamineMessage {
             // Don't output last </div>, as caller does it.
             return;
         }
+
+        // ---- We have MatsBrokerMessageRepresentation! -----
+
+        MatsBrokerMessageRepresentation matsBrokerMessageRepresentation = matsBrokerMessageRepresentation_.get();
 
         out.html("<div class='matsbm_heading'>");
         // ?: Is this the Global DLQ?
@@ -131,14 +137,13 @@ public class ExamineMessage {
                 .html("</b></code><br>\n");
         out.html("</div>\n"); // /matsbm_heading
 
-        MatsBrokerMessageRepresentation msgRepr = matsBrokerMessageRepresentationO.get();
 
         MatsTrace<?> matsTrace = null;
         int matsTraceDecompressedLength = 0;
         if ((matsSerializer != null)
-                && msgRepr.getMatsTraceBytes().isPresent() && msgRepr.getMatsTraceMeta().isPresent()) {
-            byte[] matsTraceBytes = msgRepr.getMatsTraceBytes().get();
-            String matsTraceMeta = msgRepr.getMatsTraceMeta().get();
+                && matsBrokerMessageRepresentation.getMatsTraceBytes().isPresent() && matsBrokerMessageRepresentation.getMatsTraceMeta().isPresent()) {
+            byte[] matsTraceBytes = matsBrokerMessageRepresentation.getMatsTraceBytes().get();
+            String matsTraceMeta = matsBrokerMessageRepresentation.getMatsTraceMeta().get();
             DeserializedMatsTrace<?> deserializedMatsTrace = matsSerializer.deserializeMatsTrace(matsTraceBytes,
                     matsTraceMeta);
             matsTraceDecompressedLength = deserializedMatsTrace.getSizeDecompressed();
@@ -194,8 +199,27 @@ public class ExamineMessage {
                 .filter(o -> o instanceof ExamineMessageAddition)
                 .map(o -> (ExamineMessageAddition) o)
                 .collect(Collectors.toList());
-        for (ExamineMessageAddition examineAddition : examineAdditions) {
-            out.html(examineAddition.convertMessageToHtml(msgRepr));
+        if (! examineAdditions.isEmpty()) {
+            // Create MessageRep
+            MatsBrokerDestination matsBrokerDestination_final = matsBrokerDestination;
+            MessageRep messageRep = new MessageRep() {
+                @Override
+                public MatsBrokerDestination getMatsBrokerDestination() {
+                    return matsBrokerDestination_final;
+                }
+
+                @Override
+                public MatsBrokerMessageRepresentation getMatsBrokerMessageRepresentation() {
+                    return matsBrokerMessageRepresentation;
+                }
+            };
+            AdditionContext addCtx = () -> ac;
+            for (ExamineMessageAddition examineAddition : examineAdditions) {
+                String html = examineAddition.getButtonRowHtmlFor(addCtx, messageRep);
+                if (html != null) {
+                    out.html(html);
+                }
+            }
         }
         out.html("<span id='matsbm_action_message'></span>");
         out.html("</div>");
@@ -203,7 +227,7 @@ public class ExamineMessage {
 
         // :: FLOW AND MESSAGE PROPERTIES
 
-        part_FlowAndMessageProperties(out, msgRepr, matsTrace, matsTraceDecompressedLength);
+        part_FlowAndMessageProperties(out, matsBrokerMessageRepresentation, matsTrace, matsTraceDecompressedLength);
 
         // :: DLQ Exception, if any
 
@@ -225,13 +249,13 @@ public class ExamineMessage {
                 + "  </symbol>"
                 + "</svg>\n");
 
-        part_DlqInformation(out, matsBrokerDestination.getStageDestinationType().orElse(UNKNOWN), msgRepr, matsTrace);
+        part_DlqInformation(out, matsBrokerDestination.getStageDestinationType().orElse(UNKNOWN), matsBrokerMessageRepresentation, matsTrace);
 
         // :: MATS TRACE! - do we have any?!
 
         if (matsTrace == null) {
             // -> No MatsTrace, why?
-            if (msgRepr.getMatsTraceBytes().isPresent()) {
+            if (matsBrokerMessageRepresentation.getMatsTraceBytes().isPresent()) {
                 // -> Seemingly because we don't have a MatsSerializer, and thus cannot deserialize the present bytes.
                 out.html("<div id='matsbm_part_matstrace'>");
                 out.html("<h2>NOTICE! There is a serialized MatsTrace byte array in the message, but I am"
@@ -280,7 +304,7 @@ public class ExamineMessage {
         out.html("<h2>Raw broker message info</h2><br>\n");
         out.html("Here's matsMessageRepresentation.toString(), which should include the raw info from the broker:"
                 + "<br><br>\n");
-        out.html("<code>").DATA(msgRepr.toString()).html("</code>");
+        out.html("<code>").DATA(matsBrokerMessageRepresentation.toString()).html("</code>");
         out.html("</div>\n");
 
         // Call into JavaScript to set state for buttons etc.

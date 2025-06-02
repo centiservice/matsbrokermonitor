@@ -36,8 +36,11 @@ import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination;
 import io.mats3.matsbrokermonitor.api.MatsFabricAggregatedRepresentation;
 import io.mats3.matsbrokermonitor.api.MatsFabricAggregatedRepresentation.MatsStageBrokerRepresentation;
 import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.AccessControl;
-import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.BrowseQueueTableAddition;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.BrowseQueueAddition;
 import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition.AdditionContext;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition.MessageRep;
+import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui.MonitorAddition.QueueRep;
 
 /**
  * @author Endre Stølsvik 2022-03-13 23:33 - http://stolsvik.com/, endre@stolsvik.com
@@ -80,10 +83,6 @@ class BrowseQueue {
             }
         }
 
-        // "Stack up" into a Mats Fabric representation
-        MatsFabricAggregatedRepresentation stack = MatsFabricAggregatedRepresentation
-                .stack(matsBrokerDestinations);
-
         // :: HANDLING MISSING DESTINATION
 
         out.html("<div class='matsbm_heading'>");
@@ -98,6 +97,8 @@ class BrowseQueue {
             out.html("</div>");
             return;
         }
+
+        // ----- We have a MatsBrokerDestination instance! -----
 
         // :: CONTEXT FOR JAVASCRIPT: Move some data to JS context: Number of messages on queue.
 
@@ -136,7 +137,9 @@ class BrowseQueue {
         out.html("</div>\n"); // /matsbm_heading
 
         out.html("At ").DATA(Statics.formatTimestampSpan(matsBrokerDestination.getLastUpdateLocalMillis()))
-                .html(" it had <b>").DATA(numberOfQueuedMessages).html(" messages</b>");
+                .html(" it had <b>").DATA(numberOfQueuedMessages).html(numberOfQueuedMessages == 1
+                        ? " message</b>"
+                        : " messages</b>");
         if (matsBrokerDestination.getNumberOfInflightMessages().isPresent()) {
             out.html(" of which ").DATA(matsBrokerDestination.getNumberOfInflightMessages().getAsLong())
                     .html(" were in-flight");
@@ -149,12 +152,16 @@ class BrowseQueue {
         }
         out.html("<br>\n");
 
-        Optional<MatsStageBrokerRepresentation> stageO = stack.findStageForDestinationName(matsBrokerDestination
+        // "Stack up" into a Mats Fabric representation
+        MatsFabricAggregatedRepresentation stack = MatsFabricAggregatedRepresentation
+                .stack(matsBrokerDestinations);
+
+        Optional<MatsStageBrokerRepresentation> stage_ = stack.findStageForDestinationName(matsBrokerDestination
                 .getDestinationName());
 
-        if (stageO.isPresent()) {
+        if (stage_.isPresent()) {
             out.html("<div class='matsbm_other_queues_for_stage'>");
-            MatsStageBrokerRepresentation stage = stageO.get();
+            MatsStageBrokerRepresentation stage = stage_.get();
             Optional<MatsBrokerDestination> incomingDest = stage.getDestination(STANDARD);
             if (incomingDest.isPresent()) {
                 out_queueCount(out, incomingDest.get(), true,
@@ -196,6 +203,9 @@ class BrowseQueue {
         }
 
         // :: BUTTONS: REISSUE, MUTE, DELETE, FORCE UPDATE
+
+        // Create the 'QueueRep' instance
+        MatsBrokerDestination matsBrokerDestination_final = matsBrokerDestination;
 
         // REISSUE AND MUTE selected:
         // ?: Is this a DLQ? (Both Normal and Muted DLQ)
@@ -305,11 +315,31 @@ class BrowseQueue {
                 .DATA(numberOfQueuedMessages)
                 .html("' autocomplete='off' inputmode='numeric' class='matsbm_input_max'> messages</div>");
 
-        // Force update
+        // FORCE UPDATE
 
         out.html("<button id='matsbm_button_forceupdate'"
                 + " class='matsbm_button matsbm_button_forceupdate"
                 + "' onclick='matsbm_button_forceupdate(event)'>Update Now! [u]</button>");
+
+        // ADDITIONS
+
+        // .. find the additions that are of type BrowseQueueAddition, and collect them.
+        List<BrowseQueueAddition> browseQueueAdditions = monitorAdditions.stream()
+                .filter(o -> o instanceof BrowseQueueAddition)
+                .map(o -> (BrowseQueueAddition) o)
+                .collect(Collectors.toList());
+
+        // .. output any button-row HTML for the additions.
+        QueueRep queueRep = () -> matsBrokerDestination_final;
+        AdditionContext addCtx = () -> ac;
+        for (BrowseQueueAddition browseQueueAddition : browseQueueAdditions) {
+            String columnHeadingHtml = browseQueueAddition.getButtonRowHtmlFor(addCtx, queueRep);
+            if (columnHeadingHtml != null) {
+                out.html(columnHeadingHtml);
+            }
+        }
+
+        // Placeholder for JavaScript to output messages
         out.html("<span id='matsbm_action_message'></span>");
         out.html("<br>");
         out.html("</div>\n"); // /matsbm_actionbuttons
@@ -343,18 +373,14 @@ class BrowseQueue {
                 + " onclick='matsbm_checkinvert(event)'> Sent</th>");
         out.html("<th>View</th>");
 
-        // :: Include the "additions" table cells for the message.
-        List<BrowseQueueTableAddition> tableAdditions = monitorAdditions.stream()
-                .filter(o -> o instanceof BrowseQueueTableAddition)
-                .map(o -> (BrowseQueueTableAddition) o)
-                .collect(Collectors.toList());
         // Store for whether this column want to be included for this queue.
-        IdentityHashMap<BrowseQueueTableAddition, Boolean> additionsIncluded = new IdentityHashMap<>();
-        for (BrowseQueueTableAddition tableAddition : tableAdditions) {
-            String columnHeadingHtml = tableAddition.getColumnHeadingHtml(queueId);
+        IdentityHashMap<BrowseQueueAddition, Boolean> additionsIncluded = new IdentityHashMap<>();
+        // :: Output additions column headers.
+        for (BrowseQueueAddition browseQueueAddition : browseQueueAdditions) {
+            String columnHeadingHtml = browseQueueAddition.getColumnHeadingHtmlFor(addCtx, queueRep);
             // Want to be included?
             boolean include = columnHeadingHtml != null;
-            additionsIncluded.put(tableAddition, include);
+            additionsIncluded.put(browseQueueAddition, include);
             out.html(include ? columnHeadingHtml : "");
         }
         out.html("<th>Init App</th>");
@@ -367,7 +393,8 @@ class BrowseQueue {
         out.html("</thead>");
         out.html("<tbody>");
         int messageCount = 0;
-        String firstMessageId = null;
+        String firstMessageId = null; // If single message, we auto-jump to this message.
+
         // Note: AutoCloseable, try-with-resources
         try (matsBrokerMessageIterable) {
             // Notice: Outputting the information in a streaming fashion, so that we don't have to hold on to the
@@ -397,13 +424,28 @@ class BrowseQueue {
                 out.html("Details</a>");
                 out.html("</div></td>");
 
-                // :: Include the "additions" table cells for the message.
-                for (BrowseQueueTableAddition tableAddition : tableAdditions) {
-                    // ?: Did it choose to be included?
-                    if (additionsIncluded.get(tableAddition)) {
-                        // -> Yes, so include it.
-                        String html = tableAddition.convertMessageToHtml(brokerMsg);
-                        out.html(html != null ? html : "<td><div></div></td>");
+                if (!additionsIncluded.isEmpty()) {
+                    // Create the MessageRep instance
+                    MessageRep messageRep = new MessageRep() {
+                        @Override
+                        public MatsBrokerDestination getMatsBrokerDestination() {
+                            return matsBrokerDestination_final;
+                        }
+
+                        @Override
+                        public MatsBrokerMessageRepresentation getMatsBrokerMessageRepresentation() {
+                            return brokerMsg;
+                        }
+                    };
+
+                    // :: Include the "additions" table cells for the message.
+                    for (BrowseQueueAddition tableAddition : browseQueueAdditions) {
+                        // ?: Did it choose to be included?
+                        if (additionsIncluded.get(tableAddition)) {
+                            // -> Yes, so include it.
+                            String html = tableAddition.getCellHtmlFor(addCtx, messageRep);
+                            out.html(html != null ? html : "<td><div></div></td>");
+                        }
                     }
                 }
 

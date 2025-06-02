@@ -196,25 +196,25 @@ function matsbm_broker_overview_KeyListener(event) {
 function matsbm_button_show_all_destinations(event) {
     window.location = window.location.pathname + "?show=all";
 
-    document.getElementById("matsbm_button_show_all").classList.add('matsbm_button_active')
-    document.getElementById("matsbm_button_show_non_zero").classList.remove('matsbm_button_active')
-    document.getElementById("matsbm_button_show_bad").classList.remove('matsbm_button_active')
+    document.getElementById("matsbm_button_show_all").classList.add('matsbm_button_active_indicator')
+    document.getElementById("matsbm_button_show_non_zero").classList.remove('matsbm_button_active_indicator')
+    document.getElementById("matsbm_button_show_bad").classList.remove('matsbm_button_active_indicator')
 }
 
 function matsbm_button_show_non_zero_destinations(event) {
     window.location = window.location.pathname + "?show=non_zero";
 
-    document.getElementById("matsbm_button_show_all").classList.remove('matsbm_button_active')
-    document.getElementById("matsbm_button_show_non_zero").classList.add('matsbm_button_active')
-    document.getElementById("matsbm_button_show_bad").classList.remove('matsbm_button_active')
+    document.getElementById("matsbm_button_show_all").classList.remove('matsbm_button_active_indicator')
+    document.getElementById("matsbm_button_show_non_zero").classList.add('matsbm_button_active_indicator')
+    document.getElementById("matsbm_button_show_bad").classList.remove('matsbm_button_active_indicator')
 }
 
 function matsbm_button_show_bad_destinations(event) {
     window.location = window.location.pathname + "?show=bad";
 
-    document.getElementById("matsbm_button_show_all").classList.remove('matsbm_button_active')
-    document.getElementById("matsbm_button_show_non_zero").classList.remove('matsbm_button_active')
-    document.getElementById("matsbm_button_show_bad").classList.add('matsbm_button_active')
+    document.getElementById("matsbm_button_show_all").classList.remove('matsbm_button_active_indicator')
+    document.getElementById("matsbm_button_show_non_zero").classList.remove('matsbm_button_active_indicator')
+    document.getElementById("matsbm_button_show_bad").classList.add('matsbm_button_active_indicator')
 }
 
 

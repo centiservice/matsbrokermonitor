@@ -13,7 +13,7 @@ import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination.St
  * Monitor uses to browse and perform actions on the broker.
  * <p>
  * Note: This is the "read queues and actions on messages" API, which complement the "monitor the broker" API which is
- * {@link MatsBrokerMonitor}. The reason for this separation of the API is that the pieces defined in this piece can be
+ * {@link MatsBrokerMonitor}. The reason for this separation of the API is that the pieces defined in this part can be
  * done with ordinary JMS operations, while the operations in the monitor API are not part of a standard JMS API and
  * must be implemented specifically for each broker.
  *
@@ -47,7 +47,7 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * should iterate over the messaages and output the resulting information (e.g. HTML) in a stream fashion, and then
      * close the iterable.
      *
-     * @param queueId
+     * @param queueName
      *            the full name of the queue, including mats prefix. (NOT fully qualified with e.g. "queue://")
      * @return a {@link MatsBrokerMessageIterable}, containing either all (unbounded), or a max number of messages (for
      *         ActiveMQ, it is 400) - note that it is absolutely essential that this object is closed after use! You
@@ -55,25 +55,25 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      *         there's a million messages on the destination, you might get them all if you don't have a max. Not on
      *         ActiveMQ, though - this broker doesn't give more than 400 even if there are more).
      */
-    MatsBrokerMessageIterable browseQueue(String queueId) throws BrokerIOException;
+    MatsBrokerMessageIterable browseQueue(String queueName) throws BrokerIOException;
 
     /**
      * Fetches the specified message for introspection, but does not consume it, i.e. "browses" a single message. The
      * requested message might not be present, in which case {@link Optional#empty()} is returned.
      *
-     * @param queueId
+     * @param queueName
      *            the full name of the queue, including mats prefix. (NOT fully qualified with e.g. "queue://")
      * @param messageSystemId
      *            the broker's id for this message, for JMS it is the message.getJMSMessageID().
      * @return the specified message, if present.
      */
-    Optional<MatsBrokerMessageRepresentation> examineMessage(String queueId, String messageSystemId)
+    Optional<MatsBrokerMessageRepresentation> examineMessage(String queueName, String messageSystemId)
             throws BrokerIOException;
 
     /**
      * Deletes the specified message from the specified queue.
      *
-     * @param queueId
+     * @param queueName
      *            the full name of the queue, including mats prefix. (NOT fully qualified with e.g. "queue://")
      * @param messageSystemIds
      *            the broker's id for the messages to be deleted, for JMS it is the message.getJMSMessageID().
@@ -82,14 +82,14 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * @throws BrokerIOException
      *             if problems talking with the broker.
      */
-    Map<String, MatsBrokerMessageMetadata> deleteMessages(String queueId, Collection<String> messageSystemIds)
+    Map<String, MatsBrokerMessageMetadata> deleteMessages(String queueName, Collection<String> messageSystemIds)
             throws BrokerIOException;
 
     /**
      * Deletes all message on the specified queue, up to the specified max number of messages which should be the number
      * of messages currently on the queue.
      *
-     * @param queueId
+     * @param queueName
      *            the full name of the queue, including mats prefix. (NOT fully qualified with e.g. "queue://")
      * @param limitMessages
      *            the max number of messages to delete - will typically be the number of messages we got from the last
@@ -100,7 +100,7 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * @throws BrokerIOException
      *             if problems talking with the broker.
      */
-    Map<String, MatsBrokerMessageMetadata> deleteAllMessages(String queueId, int limitMessages)
+    Map<String, MatsBrokerMessageMetadata> deleteAllMessages(String queueName, int limitMessages)
             throws BrokerIOException;
 
     /**
@@ -110,7 +110,7 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * implementation - if this is missing, the message will be put on a new synthetic DLQ named
      * <code>{@link #QUEUE_ID_FOR_FAILED_OPERATIONS}"</code>, and the message will be logged.
      *
-     * @param deadLetterQueueId
+     * @param deadLetterQueueName
      *            the full name of the queue, including mats prefix. (NOT fully qualified with e.g. "queue://")
      * @param messageSystemIds
      *            the broker's id for the messages to be reissued, for JMS it is the message.getJMSMessageID().
@@ -122,7 +122,7 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * @throws BrokerIOException
      *             if problems talking with the broker.
      */
-    Map<String, MatsBrokerMessageMetadata> reissueMessages(String deadLetterQueueId,
+    Map<String, MatsBrokerMessageMetadata> reissueMessages(String deadLetterQueueName,
             Collection<String> messageSystemIds, String reissuingUsername) throws BrokerIOException;
 
     /**
@@ -134,7 +134,7 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * message will be put on a new synthetic DLQ named <code>{@link #QUEUE_ID_FOR_FAILED_OPERATIONS}"</code>, and the
      * message will be logged.
      *
-     * @param deadLetterQueueId
+     * @param deadLetterQueueName
      *            the full name of the queue, including mats prefix. (NOT fully qualified with e.g. "queue://")
      * @param messageSystemIds
      *            the broker's id for the messages to be muted, for JMS it is the message.getJMSMessageID().
@@ -150,7 +150,7 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * @throws BrokerIOException
      *             if problems talking with the broker.
      */
-    Map<String, MatsBrokerMessageMetadata> muteMessages(String deadLetterQueueId,
+    Map<String, MatsBrokerMessageMetadata> muteMessages(String deadLetterQueueName,
             Collection<String> messageSystemIds, String mutingUsername, String muteComment) throws BrokerIOException;
 
     /**
@@ -164,7 +164,7 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * we have already reissued this message and we're effectively "looping" (reissued messages are again DLQing), and
      * we stop the reissuing process.
      *
-     * @param deadLetterQueueId
+     * @param deadLetterQueueName
      *            the full name of the queue, including mats prefix. (NOT fully qualified with e.g. "queue://")
      * @param limitMessages
      *            the max number of messages to reissue - will typically be the number of messages we got from the last
@@ -178,7 +178,7 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * @throws BrokerIOException
      *             if problems talking with the broker.
      */
-    Map<String, MatsBrokerMessageMetadata> reissueAllMessages(String deadLetterQueueId, int limitMessages,
+    Map<String, MatsBrokerMessageMetadata> reissueAllMessages(String deadLetterQueueName, int limitMessages,
             String reissuingUsername) throws BrokerIOException;
 
     /**
@@ -186,7 +186,7 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * the number of messages currently on the queue. Note that there is no check that the queueId is actually a DLQ -
      * it is up to the caller to ensure this. Read more at {@link #muteMessages(String, Collection, String, String)}.
      *
-     * @param deadLetterQueueId
+     * @param deadLetterQueueName
      *            the full name of the queue, including mats prefix. (NOT fully qualified with e.g. "queue://")
      * @param limitMessages
      *            the max number of messages to reissue - will typically be the number of messages we got from the last
@@ -204,9 +204,19 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * @throws BrokerIOException
      *             if problems talking with the broker.
      */
-    Map<String, MatsBrokerMessageMetadata> muteAllMessages(String deadLetterQueueId, int limitMessages,
+    Map<String, MatsBrokerMessageMetadata> muteAllMessages(String deadLetterQueueName, int limitMessages,
             String mutingUsername, String muteComment) throws BrokerIOException;
 
+    /**
+     * An iterable over the messages on a Mats Broker destination. This is used to browse the messages on a queue, and
+     * is returned by the {@link #browseQueue(String)} method. It is <b>really important</b> that this iterable is
+     * closed after use, as the iterable will hold on to resources that must be released. The iterable is also
+     * {@link AutoCloseable}, so it can be used in a try-with-resources block. You should use the iterator in a
+     * streaming fashion, i.e. iterate over the messages and output the resulting information (e.g. HTML) as you
+     * iterate, and then close the iterable. If you instead e.g. move them over to a list, the JVM will not be able to
+     * GC the messages until the list is GCed - which might consume a lot of memory if there are many and large messages
+     * on the queue.
+     */
     interface MatsBrokerMessageIterable extends Iterable<MatsBrokerMessageRepresentation>, AutoCloseable {
         /**
          * Close overridden to not throw.
@@ -218,8 +228,8 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
      * The "metadata" of a message, i.e. the information that is available without deserializing the MatsTrace. This is
      * a concrete class, and its field names are such that it can be used as a DTO for serializing to JSON.
      * <p>
-     * <i>Note: As a user of the API, you should employ this as if an API interface. The class is final, you should not
-     * create instance of it, and it may change - probably to get more fields.</i>
+     * <i>Note: As a user of the API: The class is final, you should not create instances of it (you get instances of it
+     * from relevant methods), and it may backward-compatibly change - i.e. to get more fields.</i>
      */
     final class MatsBrokerMessageMetadata {
         public String messageSystemId;
@@ -413,5 +423,4 @@ public interface MatsBrokerBrowseAndActions extends Closeable {
             super(message, cause);
         }
     }
-
 }

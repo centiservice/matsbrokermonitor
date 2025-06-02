@@ -32,7 +32,7 @@ import java.util.function.Consumer;
  * Note: This is the "monitor the queues" part of the MatsBrokerMonitor. The "browse the queues and actions on messages"
  * part is found in {@link MatsBrokerBrowseAndActions}. The reason for this separation of the API is that the
  * functionality defined in this part must be implemented specifically for each broker (the JMS API does not have
- * functions for it), while the "browse and control" part can be implemented using the standard JMS API.
+ * functions for it), while the "browse and actions" part can be implemented using the standard JMS API.
  *
  * @see UpdateEvent for more information about how the information is presented and updated.
  * @see MatsBrokerBrowseAndActions for the API to browse and act upon the messages on the destinations.
