@@ -13,8 +13,9 @@ import io.mats3.serial.MatsSerializer;
 
 /**
  * A HTML UI for the MatsBrokerMonitor system. Meant to be created as a singleton using the
- * {@link #create(MatsBrokerMonitor, MatsBrokerBrowseAndActions) create}-methods, and then reused. Is obviously
- * thread-safe, as it is meant to be used by multiple threads.
+ * {@link #create(MatsBrokerMonitor, MatsBrokerBrowseAndActions) create}-methods, and then reused.
+ * <p>
+ * The instance is thread-safe, as it is meant to be created once per JVM/broker, and be used by multiple threads!
  * 
  * @author Endre Stølsvik 2022-01-02 12:19 - http://stolsvik.com/, endre@stolsvik.com
  */
@@ -23,7 +24,7 @@ public interface MatsBrokerMonitorHtmlGui {
     static MatsBrokerMonitorHtmlGuiImpl create(MatsBrokerMonitor matsBrokerMonitor,
             MatsBrokerBrowseAndActions matsBrokerBrowseAndActions,
             List<? super MonitorAddition> monitorAdditions,
-            MatsSerializer<?> matsSerializer) {
+            MatsSerializer matsSerializer) {
         return new MatsBrokerMonitorHtmlGuiImpl(matsBrokerMonitor, matsBrokerBrowseAndActions, monitorAdditions,
                 matsSerializer);
     }

@@ -42,7 +42,7 @@ public class MatsBrokerMonitorHtmlGuiImpl implements MatsBrokerMonitorHtmlGui, S
     private final MatsBrokerMonitor _matsBrokerMonitor;
     private final MatsBrokerBrowseAndActions _matsBrokerBrowseAndActions;
     private final List<? super MonitorAddition> _monitorAdditions;
-    private final MatsSerializer<?> _matsSerializer;
+    private final MatsSerializer _matsSerializer;
 
     /**
      * <b>DO NOT USE THIS CONSTRUCTOR</b>, use factories on {@link MatsBrokerMonitorHtmlGui}!
@@ -50,7 +50,7 @@ public class MatsBrokerMonitorHtmlGuiImpl implements MatsBrokerMonitorHtmlGui, S
     public MatsBrokerMonitorHtmlGuiImpl(MatsBrokerMonitor matsBrokerMonitor,
             MatsBrokerBrowseAndActions matsBrokerBrowseAndActions,
             List<? super MonitorAddition> monitorAdditions,
-            MatsSerializer<?> matsSerializer) {
+            MatsSerializer matsSerializer) {
         _matsBrokerMonitor = matsBrokerMonitor;
         _matsBrokerBrowseAndActions = matsBrokerBrowseAndActions;
         _monitorAdditions = monitorAdditions == null ? Collections.emptyList() : monitorAdditions;

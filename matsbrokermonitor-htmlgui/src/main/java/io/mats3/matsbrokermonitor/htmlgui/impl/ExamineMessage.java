@@ -51,7 +51,7 @@ public class ExamineMessage {
     private static final Logger log = LoggerFactory.getLogger(ExamineMessage.class);
 
     static void gui_ExamineMessage(MatsBrokerMonitor matsBrokerMonitor,
-            MatsBrokerBrowseAndActions matsBrokerBrowseAndActions, MatsSerializer<?> matsSerializer,
+            MatsBrokerBrowseAndActions matsBrokerBrowseAndActions, MatsSerializer matsSerializer,
             List<? super MonitorAddition> monitorAdditions,
             Outputter out, String queueId, String messageSystemId, AccessControl ac) throws IOException {
         out.html("<div id='matsbm_page_examine_message' class='matsbm_report'>\n");
@@ -142,13 +142,13 @@ public class ExamineMessage {
         out.html("</div>\n"); // /matsbm_heading
 
 
-        MatsTrace<?> matsTrace = null;
+        MatsTrace matsTrace = null;
         int matsTraceDecompressedLength = 0;
         if ((matsSerializer != null)
                 && matsBrokerMessageRepresentation.getMatsTraceBytes().isPresent() && matsBrokerMessageRepresentation.getMatsTraceMeta().isPresent()) {
             byte[] matsTraceBytes = matsBrokerMessageRepresentation.getMatsTraceBytes().get();
             String matsTraceMeta = matsBrokerMessageRepresentation.getMatsTraceMeta().get();
-            DeserializedMatsTrace<?> deserializedMatsTrace = matsSerializer.deserializeMatsTrace(matsTraceBytes,
+            DeserializedMatsTrace deserializedMatsTrace = matsSerializer.deserializeMatsTrace(matsTraceBytes,
                     matsTraceMeta);
             matsTraceDecompressedLength = deserializedMatsTrace.getSizeDecompressed();
             matsTrace = deserializedMatsTrace.getMatsTrace();
@@ -320,7 +320,7 @@ public class ExamineMessage {
 
     private static void part_FlowAndMessageProperties(Outputter out,
             MatsBrokerMessageRepresentation brokerMsg,
-            MatsTrace<?> matsTrace,
+            MatsTrace matsTrace,
             int matsTraceDecompressedLength) throws IOException {
         out.html("<div id='matsbm_part_flow_and_message_props'>");
 
@@ -560,12 +560,12 @@ public class ExamineMessage {
         out.html("</div>");
     }
 
-    private static void part_StateAndMessage(Outputter out, MatsTrace<?> matsTrace)
+    private static void part_StateAndMessage(Outputter out, MatsTrace matsTrace)
             throws IOException {
         out.html("<div id='matsbm_part_state_and_message'>\n");
         out.html("<h2>Incoming State and Message</h2><br>\n");
         // State:
-        Optional<? extends StackState<?>> currentStateO = matsTrace.getCurrentState();
+        Optional<? extends StackState> currentStateO = matsTrace.getCurrentState();
         out.html("<div class='matsbm_box_call_or_state");
         if (currentStateO.isEmpty()) {
             out.html(" matsbm_no_copy");
@@ -588,7 +588,7 @@ public class ExamineMessage {
     }
 
     private static void part_DlqInformation(Outputter out, StageDestinationType stageDestinationType,
-            MatsBrokerMessageRepresentation brokerMsg, MatsTrace<?> matsTrace)
+            MatsBrokerMessageRepresentation brokerMsg, MatsTrace matsTrace)
             throws IOException {
         // These three properties are added by Mats3 when performing 'Mats Managed DLQ Divert', and they are cleared
         // on reissue, implying that they shall only be present on the message when it is Mats3 that has just DLQed it.
@@ -730,7 +730,7 @@ public class ExamineMessage {
         out.html("</div>\n");
     }
 
-    private static void part_ReplyToStack(Outputter out, MatsTrace<?> matsTrace) throws IOException {
+    private static void part_ReplyToStack(Outputter out, MatsTrace matsTrace) throws IOException {
         out.html("<div id='matsbm_part_stack'>");
         out.html("<h2>ReplyTo Stack</h2><br>\n");
 
@@ -740,7 +740,7 @@ public class ExamineMessage {
             out.html("<h3><i>stack is empty</i></h3> (terminator-level, cannot reply)<br>");
         }
         else {
-            List<? extends StackState<?>> stateStack = matsTrace.getStateStack();
+            List<? extends StackState> stateStack = matsTrace.getStateStack();
             out.html("<table class='matsbm_table_replytostack'>");
             out.html("<thead><tr>");
             out.html("<th>Height</th>");
@@ -765,7 +765,7 @@ public class ExamineMessage {
         out.html("</div>");
     }
 
-    private static void part_MatsTrace(Outputter out, MatsTrace<?> matsTrace, boolean isDlq) throws IOException {
+    private static void part_MatsTrace(Outputter out, MatsTrace matsTrace, boolean isDlq) throws IOException {
         /*
          * Determine if the initial REQUEST or SEND was performed with initial state (dto, initialState) or normal
          * (dto). This is a bit convoluted, as the state flow data structure really has no direct correlation to the
@@ -796,8 +796,8 @@ public class ExamineMessage {
         // # Notice the added extra "0" in front, for the initialState to the sent-to endpoint.
         // 0:0:1:1:0:0:1:1:0:0:0:1:1:0:1:1:
 
-        List<? extends Call<?>> callFlow = matsTrace.getCallFlow();
-        List<? extends StackState<?>> stateFlow = matsTrace.getStateFlow();
+        List<? extends Call> callFlow = matsTrace.getCallFlow();
+        List<? extends StackState> stateFlow = matsTrace.getStateFlow();
 
         // :: Run through the actual state flow, and build a string of the heights
         StringBuilder actualStateHeightsFromStateFlow = new StringBuilder();
@@ -817,7 +817,7 @@ public class ExamineMessage {
                 // This latter we add here, since it isn't represented in the call flow.
                 stateHeightsFromCallFlow_initialState.append("0:");
             }
-            Call<?> call = callFlow.get(i);
+            Call call = callFlow.get(i);
             if (call.getCallType() == CallType.REQUEST) {
                 stateHeightsFromCallFlow_normal.append(call.getReplyStackHeight() - 1).append(':');
                 stateHeightsFromCallFlow_initialState.append(call.getReplyStackHeight() - 1).append(':');
@@ -856,12 +856,12 @@ public class ExamineMessage {
         // :: Go through the state flow, and re-run the stack, so that we know incoming state, if any, for each call
 
         // Store the incoming state as an identity map from the call.
-        IdentityHashMap<Call<?>, StackState<?>> callToState = new IdentityHashMap<>();
+        IdentityHashMap<Call, StackState> callToState = new IdentityHashMap<>();
         // ?: Did we comprehend the state flow?
         if (initialStateStatus > 0) {
             // -> Yes, we understood the stateflow, so do the hook-on to the calls having incoming state
-            Deque<StackState<?>> stack = new ArrayDeque<>();
-            Iterator<? extends StackState<?>> stateFlowIt = stateFlow.iterator();
+            Deque<StackState> stack = new ArrayDeque<>();
+            Iterator<? extends StackState> stateFlowIt = stateFlow.iterator();
             // ?: Was the initiation call a REQUEST?
             if (!initiationIsSend) {
                 // -> Initiation call is REQUEST, so push a state from flow to stack
@@ -876,7 +876,7 @@ public class ExamineMessage {
 
             // Begin from the next call (after we've handled the possible initialState above)
             for (int i = 1; i < callFlow.size(); i++) {
-                Call<?> call = callFlow.get(i);
+                Call call = callFlow.get(i);
                 if (call.getCallType() == CallType.REQUEST) {
                     // -> REQUEST, so we push a state from the stateflow.
                     stack.push(stateFlowIt.next());
@@ -930,7 +930,7 @@ public class ExamineMessage {
                 + "</svg>");
 
         int highestStackHeight = 0;
-        for (Call<?> currentCall : callFlow) {
+        for (Call currentCall : callFlow) {
             highestStackHeight = Math.max(highestStackHeight, currentCall.getReplyStackHeight());
         }
 
@@ -989,12 +989,12 @@ public class ExamineMessage {
         int prevIndentLevel = 0;
         long previousCalledTimestamp = matsTrace.getInitiatingTimestamp();
         for (int i = 0; i < callFlow.size(); i++) {
-            Call<?> currentCall = callFlow.get(i);
+            Call currentCall = callFlow.get(i);
             // If there is only one call, then it is either first, or MINIMAL and last.
             // If it is first, then both matsTrace.getCallNumber() and 'i+1' == 1
             int currentCallNumber = callFlow.size() == 1 ? matsTrace.getCallNumber() : i + 1;
             // Can we get a prevCall?
-            Call<?> prevCall = (i == 0)
+            Call prevCall = (i == 0)
                     ? null
                     : callFlow.get(i - 1);
 
@@ -1099,7 +1099,7 @@ public class ExamineMessage {
             }
             callType += " this is a " + currentCall.getCallType();
             out.html(callType).html(" call");
-            StackState<?> stackState = callToState.get(currentCall);
+            StackState stackState = callToState.get(currentCall);
             if (stackState != null) {
                 out.html(i == 0 ? " w/ initial state" : " w/ state");
             }
@@ -1133,7 +1133,7 @@ public class ExamineMessage {
 
         String previousTo = "Initiation";
         for (int i = 0; i < callFlow.size(); i++) {
-            Call<?> currentCall = callFlow.get(i);
+            Call currentCall = callFlow.get(i);
             // If there is only one call, then it is either first, or MINIMAL and last.
             // If it is first, then both matsTrace.getCallNumber() and 'i+1' == 1
             int currentCallNumber = callFlow.size() == 1 ? matsTrace.getCallNumber() : i + 1;
@@ -1170,12 +1170,12 @@ public class ExamineMessage {
                 // ?: Is this the last call?
                 if (i == (callFlow.size() - 1)) {
                     // -> Yes, so fetch state from current call
-                    Optional<? extends StackState<?>> currentStateO = matsTrace.getCurrentState();
+                    Optional<? extends StackState> currentStateO = matsTrace.getCurrentState();
                     state = currentStateO.<Object> map(StackState::getState).orElse(null);
                 }
                 else {
                     // -> No, so fetch state from the callToState map
-                    StackState<?> stackState = callToState.get(currentCall);
+                    StackState stackState = callToState.get(currentCall);
                     state = stackState != null ? stackState.getState() : null;
                 }
 

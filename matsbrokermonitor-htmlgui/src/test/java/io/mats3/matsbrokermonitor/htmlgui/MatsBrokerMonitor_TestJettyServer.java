@@ -129,7 +129,7 @@ public class MatsBrokerMonitor_TestJettyServer {
             // Get JMS ConnectionFactory from ServletContext
             ConnectionFactory connFactory = (ConnectionFactory) sc.getAttribute(ConnectionFactory.class.getName());
             // MatsSerializer
-            MatsSerializer<String> matsSerializer = MatsSerializerJson.create();
+            MatsSerializer matsSerializer = MatsSerializerJson.create();
             // Create the MatsFactory
             _matsFactory = JmsMatsFactory.createMatsFactory_JmsOnlyTransactions(APP_NAME, APP_VERSION,
                     JmsMatsJmsSessionHandler_Pooling.create(connFactory, PoolingKeyInitiator.FACTORY,
@@ -142,7 +142,7 @@ public class MatsBrokerMonitor_TestJettyServer {
             // .. Concurrency of only 2
             factoryConfig.setConcurrency(SetupTestMatsEndpoints.BASE_CONCURRENCY);
             // .. Mats Managed DLQ Divert, only a few deliveries
-            ((JmsMatsFactory<?>) _matsFactory).setMatsManagedDlqDivert(3);
+            ((JmsMatsFactory) _matsFactory).setMatsManagedDlqDivert(3);
             // .. Use port number of current server as postfix for name of MatsFactory, and of nodename
             Integer portNumber = (Integer) sc.getAttribute(CONTEXT_ATTRIBUTE_PORTNUMBER);
             factoryConfig.setName(getClass().getSimpleName() + "_" + portNumber);
