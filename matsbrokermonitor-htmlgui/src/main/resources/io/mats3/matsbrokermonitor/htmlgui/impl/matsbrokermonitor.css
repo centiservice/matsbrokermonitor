@@ -658,7 +658,7 @@
     background-color: #ffff99 !important;
 }
 
-#matsbm_table_browse_queue tr:last-of-type {
+#matsbm_table_browse_queue tbody tr:last-of-type {
     border-bottom: thick solid #009879;
 }
 
