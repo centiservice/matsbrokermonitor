@@ -33,13 +33,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.activemq.artemis.api.core.QueueConfiguration;
-import org.apache.activemq.artemis.api.core.RoutingType;
-import org.apache.activemq.artemis.api.core.SimpleString;
-import org.apache.activemq.artemis.core.config.CoreAddressConfiguration;
-import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
-import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
-import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.apache.activemq.broker.BrokerService;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.server.Server;
@@ -917,14 +910,6 @@ public class MatsBrokerMonitor_TestJettyServer {
             BrokerService broker = MatsTestBroker.newActiveMqBroker(ActiveMq.LOCALHOST, ActiveMq.SHUTDOWNHOOK);
             jmsConnectionFactory = MatsTestBroker.newActiveMqConnectionFactory("tcp://localhost:61616");
         }
-        else if ("Artemis_".equals(mode)) {
-            String brokerUrl = "vm://" + Math.abs(ThreadLocalRandom.current().nextInt());
-            EmbeddedActiveMQ artemisBroker = createArtemisBroker(brokerUrl);
-            org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory artemisMq_conFact = new org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory(
-                    brokerUrl);
-            // artemisMq_conFact.setConsumerWindowSize(128 * 1024 * 1024);
-            jmsConnectionFactory = artemisMq_conFact;
-        }
         else {
             throw new IllegalStateException("No mode");
         }
@@ -939,53 +924,4 @@ public class MatsBrokerMonitor_TestJettyServer {
         }
         log.info("MAIN EXITING!!");
     }
-
-    /// ---
-
-    public static EmbeddedActiveMQ createArtemisBroker(String brokerUrl) {
-        log.info("Setting up in-vm Artemis embedded broker on URL '" + brokerUrl + "'.");
-        org.apache.activemq.artemis.core.config.Configuration config = new ConfigurationImpl();
-        try {
-            config.setSecurityEnabled(false);
-            // config.setPersistenceEnabled(false);
-            config.addAcceptorConfiguration("in-vm", brokerUrl);
-
-            // :: Configuring for common DLQs (since we can't get individual DLQs to work!!)
-            config.addAddressSetting("#",
-                    new AddressSettings()
-                            .setDeadLetterAddress(SimpleString.toSimpleString("DLQ"))
-                            .setExpiryAddress(SimpleString.toSimpleString("ExpiryQueue"))
-                            .setMaxDeliveryAttempts(3));
-            // :: This is just trying to emulate the default config from default broker.xml - inspired by
-            // Spring Boot which also got problems with default config in embedded mode being a tad lacking.
-            // https://github.com/spring-projects/spring-boot/pull/12680/commits/a252bb52b5106f3fec0d3b2b157507023aa04b2b
-            // This effectively makes these address::queue combos "sticky" (i.e. not auto-deleting), AFAIK.
-            config.addAddressConfiguration(
-                    new CoreAddressConfiguration()
-                            .setName("DLQ")
-                            .addRoutingType(RoutingType.ANYCAST)
-                            .addQueueConfiguration(new QueueConfiguration("DLQ")
-                                    .setRoutingType(RoutingType.ANYCAST)));
-            config.addAddressConfiguration(
-                    new CoreAddressConfiguration()
-                            .setName("ExpiryQueue")
-                            .addRoutingType(RoutingType.ANYCAST)
-                            .addQueueConfiguration(new QueueConfiguration("ExpiryQueue")
-                                    .setRoutingType(RoutingType.ANYCAST)));
-        }
-        catch (Exception e) {
-            throw new AssertionError("Can't config the Artemis Configuration.", e);
-        }
-
-        EmbeddedActiveMQ server = new EmbeddedActiveMQ();
-        server.setConfiguration(config);
-        try {
-            server.start();
-        }
-        catch (Exception e) {
-            throw new AssertionError("Can't start the Artemis Broker.", e);
-        }
-        return server;
-    }
-
 }

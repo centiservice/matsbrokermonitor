@@ -44,9 +44,6 @@ dependencies {
     testImplementation "org.apache.activemq:activemq-broker:$activeMqVersion"
     // ..ActiveMQ Kaha (not really needed)
     testImplementation "org.apache.activemq:activemq-kahadb-store:$activeMqVersion"
-    // Also Artemis
-    testImplementation "org.apache.activemq:artemis-jms-client:$artemisMqVersion"
-    testImplementation "org.apache.activemq:artemis-server:$artemisMqVersion"
 
     // Base Jetty Server
     testImplementation "org.eclipse.jetty:jetty-server:$jettyVersion"

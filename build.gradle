@@ -16,19 +16,18 @@ allprojects {
 ext {
     matsVersion = '1.0.0+2025-05-17'
 
-    slf4jVersion = '2.0.12' // Only CompileOnly
-    jmsApiDependency = 'jakarta.jms:jakarta.jms-api:2.0.3' // Following Mats3's lead. Only CompileOnly.
-    jacksonVersion = '2.17.0'
+    slf4jVersion = '2.0.17' // Only CompileOnly
+    jmsApiDependency = 'jakarta.jms:jakarta.jms-api:2.0.3' // Only CompileOnly. Version following Mats3's lead.
+    jacksonVersion = '2.19.0'
 
-    stbHealthCheckVersion = '0.4.0+2023-04-25' // For 'matsbrokermonitor-stb-healthcheck'
+    stbHealthCheckVersion = '0.4.1+2024-05-07' // For 'matsbrokermonitor-stb-healthcheck'
 
     // === For testing
-    activeMqVersion = '5.18.4'
-    artemisMqVersion = '2.33.0'
-    springVersion = '5.3.34' // Spring 6 depends on Java 17 and Jakarta EE 9+
+    activeMqVersion = '5.19.0'
+    springVersion = '5.3.39' // Spring 6 depends on Java 17 and Jakarta EE 9+
     junitVersion = '4.13.2'
-    logbackVersion = '1.5.5'
-    jettyVersion = '9.4.54.v20240208'
+    logbackVersion = '1.5.18'
+    jettyVersion = '9.4.57.v20241219'
 }
 
 subprojects {
