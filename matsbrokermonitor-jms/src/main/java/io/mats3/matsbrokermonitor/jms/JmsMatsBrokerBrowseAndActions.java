@@ -414,11 +414,17 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
                 if (randomCookie.equals(message.getStringProperty(JMS_MSG_PROP_LAST_OPERATION_COOKIE))) {
                     // -> Yes, we've already been through this message - must be "looping" where reissued messages
                     // again end up on the DLQ.
+
+                    // We must reissue this last message since we've consumed it, and we will commit the consumption
+                    // below, so otherwise it would be lost, but then we stop.
+                    retainingOperationOnSingleMessage(operation, message, randomCookie, username, comment, session,
+                            genericProducer, dlq, nanosTaken_Receive, reissuedMessageIds, deleteDlqProps);
                     long nanosTaken_Total = System.nanoTime() - nanosAtStart_Total;
-                    log.info(operation._present.toUpperCase() + " STOPPED: Message [" + message.getJMSMessageID()
-                            + "] has already been reissued by this reissue operation, seems like we are"
+                    log.warn(operation._present.toUpperCase() + " STOPPED: Message [" + message.getJMSMessageID()
+                            + "] has already been reissued by the current reissue operation, seems like we are"
                             + " \"looping\". This happened after [" + reissuedMessageCount + "] messages, requested ["
-                            + limitMessages + "] messages. Total time: " + ms(nanosTaken_Total) + " ms.");
+                            + limitMessages + "] messages. Reissued this last message, so as not to lose it,"
+                            + "then quitting. Total time: " + ms(nanosTaken_Total) + " ms.");
                     break;
                 }
 
@@ -472,7 +478,7 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
             MDC.put(MDC_MATS_STAGE_ID, toStageId);
 
             // :: Modify the message to be handled
-            // JMS have this strange thing where a received message is has read-only properties.
+            // JMS have this strange thing where a received message has read-only properties.
             // This can be "fixed" by message.clearProperties() - but with the obvious drawback that
             // all properties are cleared. So we need to copy off the existing properties, and put them
             // back on the message after 'clearProperties'.
@@ -508,18 +514,18 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
                 // -> Yes, we know which queue it originally came from!
                 Destination toDestination;
 
-                // :: Handle the different operation
-                // s
+                // :: Handle the different operations
                 // ?: Is it a REISSUE operation?
                 if (operation == RetainingMessageOperation.REISSUE) {
                     // Originally on Queue or Topic?
                     String messageType = message.getStringProperty(JMS_MSG_PROP_MESSAGE_TYPE);
-                    // TODO: Delete this in 2025 ASAP.
+                    // ?: Are we able to determine the message type?
                     if (messageType == null) {
+                        // -> No, so we don't know if it was originally destined for a Queue or a Topic.
+                        // Log an error, and default to "" (which will become a queue - let the user solve this).
                         log.error("Message lacks JmsMats JMS StringProperty [" + JMS_MSG_PROP_MESSAGE_TYPE
                                 + "], so don't know if it was originally destined for a Queue or a Topic."
                                 + " Message System ID: [" + messageSystemId + "]");
-                        // Default to "" to ensure Queue.
                         messageType = "";
                     }
 
@@ -530,7 +536,6 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
                     toDestination = isTopic
                             ? session.createTopic(toDestinationName)
                             : session.createQueue(toDestinationName);
-
                 }
                 // ?: Is it a MUTE operation?
                 else if (operation == RetainingMessageOperation.MUTE) {
