@@ -1,6 +1,18 @@
+// MBM Broadcast Receiver
+
 dependencies {
     api "io.mats3:mats-api:$matsVersion" // install(..) method needs MatsFactory
     implementation project(":matsbrokermonitor-api")
 
     compileOnly "org.slf4j:slf4j-api:$slf4jVersion"
+}
+
+mavenPublishing {
+    pom {
+        name = 'MatsBrokerMonitor Broadcast Receiver'
+        description = 'Plugin for each MatsFactory on the microservices that constitute the Mats Fabric, which' +
+                ' receives updates from \'matsbrokermonitor-broadcastandcontrol\'. It puts the information onto the' +
+                ' MatsFactory, so that monitoring and alerting of e.g. queue lengths and age of head message can be' +
+                ' done on the nodes themselves (not only centrally).'
+    }
 }

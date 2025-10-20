@@ -1,6 +1,17 @@
+// MBM Broadcast and Control
+
 dependencies {
     api "io.mats3:mats-api:$matsVersion" // install(..) method needs MatsFactory
     api project(":matsbrokermonitor-api") // install(..) method needs MatsBrokerMonitor
 
     compileOnly "org.slf4j:slf4j-api:$slf4jVersion"
+}
+
+mavenPublishing {
+    pom {
+        name = 'MatsBrokerMonitor Broadcast and Control'
+        description = 'Library that hooks into the MatsBrokerMonitor and broadcasts the current Mats Fabric' +
+                ' situation, so that the microservices can display and alert on their own status (queue lengths, age' +
+                ' of head message, etc.). Used together with \'matsbrokermonitor-broadcastreceiver\'.'
+    }
 }

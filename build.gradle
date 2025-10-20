@@ -1,3 +1,10 @@
+// MatsBrokerMonitor
+
+plugins {
+    id 'java-library'
+    id "com.vanniktech.maven.publish" version "0.34.0" // Publish to Maven Central, over Portal Publisher API
+}
+
 // Customize the Gradle Wrapper generation task.
 wrapper {
     gradleVersion = "8.14.3"
@@ -30,20 +37,30 @@ ext {
     jettyVersion = '9.4.57.v20241219'
 }
 
+// :: Find which Java version to use for the toolchain.
+int javaVersion = 11;
+if (project.properties.containsKey('mats.build.java_version')) {
+    javaVersion = Integer.parseInt((String) project.properties['mats.build.java_version'])
+    println "Specified Java version for toolchain, using Java version: $javaVersion"
+}
+
+// Common for all subprojects
 subprojects {
     apply plugin: "java-library"
-
-    java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(11))
-        }
-        withJavadocJar()
-        withSourcesJar()
-    }
+    apply plugin: "com.vanniktech.maven.publish"
 
     repositories { mavenCentral() }
 
-    tasks.withType(JavaCompile).configureEach {
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(javaVersion))
+        }
+    }
+
+    compileJava {
         options.encoding = 'UTF-8'
         options.incremental = true
         options.compilerArgs += ['-Werror', '-Xlint:all', '-Xlint:-serial']
@@ -65,101 +82,95 @@ subprojects {
         /*
          * It is possible to change the broker to which tests are run. Check mats3/build.gradle for more doc.
          *
-         * An example:
+         * Two examples:
+         *
+         * == Run all tests with in-vm Artemis MQ brokers:
+         * ./gradlew -Pmats.test.broker=artemis clean test
          *
          * == Run all tests against an external Artemis MQ broker on localhost:
          * ./gradlew -Pmats.test.broker=artemis -Pmats.test.brokerurl=localhost clean test
          */
         systemProperties project.properties.subMap(["mats.test.brokerurl", "mats.test.broker"])
+
+        // Move over the CI environment variable, so that we can increase timings of tests if on CI environment.
+        // (Check MatsTestLatch.WAIT_MILLIS_FOR_NON_OCCURENCE)
+        systemProperties System.getenv().subMap(["CI"])
+
+        testLogging {
+            exceptionFormat = 'full'
+        }
     }
 
-    // ------------------------------------------------
-    // -- Simple tools
+    // Also clean out some dir sometimes popping up, IntelliJ?
+    clean {
+        delete "$projectDir/out/"
+    }
 
     // Define dependency report task that all subprojects gets. Invoke with "./gradlew allDeps | less"
     tasks.register('allDeps', DependencyReportTask) {}
 
-    // Some info about current gradle environment.
-    tasks.register('systemInformation') {
-        doLast {
-            println "\n** Java properties [System.getProperties()], sorted:\n"
-            System.properties.sort().each { k, v ->
-                println("$k = $v")
+    // :: For publishing subprojects: All, minus 'mats-api-test*'
+    if (!it.name.startsWith('matsbrokermonitor-app')) {
+        mavenPublishing { // 'publishToMavenCentral' task.
+            publishToMavenCentral()
+            signAllPublications()
+
+            coordinates(group.toString(), name, version.toString())
+
+            pom {
+                name = 'Mats Broker Monitor'
+                description = 'Monitoring solution for the backend message broker of Mats'
+                url = 'https://github.com/centiservice/matsbrokermonitor'
+                licenses {
+                    license {
+                        name = 'PolyForm Perimeter License 1.0.0 with examples'
+                        url = 'https://github.com/centiservice/matsbrokermonitor/blob/main/LICENSE.md'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'stolsvik'
+                        name = 'Endre Stølsvik'
+                        email = 'endre@stolsvik.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/centiservice/matsbrokermonitor.git'
+                    developerConnection = 'scm:git:ssh://github.com:centiservice/matsbrokermonitor.git'
+                    url = 'https://github.com/centiservice/matsbrokermonitor'
+                }
             }
-            println "\n** Environment [System.getenv()], sorted:\n"
-            System.env.sort().each { k, v ->
-                println("$k = $v")
-            }
-            println ''
-            println "** Java Version:   " + System.getProperty("java.version")
-            println "** Groovy Version: " + GroovySystem.getVersion()
-            println "** Gradle Version: " + gradle.gradleVersion
         }
     }
 }
 
-// For publishing subprojects: All, minus 'matsbrokermonitor-app'
-configure(subprojects.findAll { it.name != 'matsbrokermonitor-app' }) {
-    apply plugin: 'signing'
-    apply plugin: 'maven-publish'
+clean {
+    // Vanniktech publish plugin creates this, so clean it too.
+    delete "build/"
+    // Note: "build-gradle" pops back up after any gradle run, as config cache and problem report puts things there.
+}
 
-    signing {
-        // Sign everything, even MD5s and SHAs..
-        sign publishing.publications
-    }
+// ------------------------------------------------
+// -- Simple tools
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                pom {
-                    name = 'Mats Broker Monitor'
-                    description = 'Monitoring solution for the backend message broker of Mats'
-                    url = 'https://github.com/centiservice/matsbrokermonitor'
-                    licenses {
-                        license {
-                            name = 'PolyForm Perimeter License 1.0.0 with examples'
-                            url = 'https://github.com/centiservice/matsbrokermonitor/blob/main/LICENSE.md'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = 'stolsvik'
-                            name = 'Endre Stølsvik'
-                            email = 'endre@stolsvik.com'
-                        }
-                    }
-                    scm {
-                        connection = 'scm:git:https://github.com/centiservice/matsbrokermonitor.git'
-                        developerConnection = 'scm:git:ssh://github.com:centiservice/matsbrokermonitor.git'
-                        url = 'https://github.com/centiservice/matsbrokermonitor'
-                    }
-                }
-                from components.java
-            }
+// Some info about current gradle environment.
+import java.nio.charset.Charset
+tasks.register('systemInformation') {
+    def gradleVersion = gradle.gradleVersion // Needed due to config cache.
+    doLast {
+        println "\n** Java properties [System.getProperties()], sorted:\n"
+        System.properties.sort().each { k, v ->
+            println("$k = $v")
         }
-        repositories {
-            maven {
-                name 'SonatypeOSSRHSnapshot'
-                url 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
-                credentials {
-                    // using findProperty(..) to be able to build without it being defined.
-                    username findProperty('sonatypeUsername') as String ?: "should be in different file"
-                    password findProperty('sonatypePassword') as String ?: "should be in different file"
-                }
-            }
-            maven {
-                name 'SonatypeOSSRHStaging'
-                url 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2'
-                credentials {
-                    // using findProperty(..) to be able to build without it being defined.
-                    username findProperty('sonatypeUsername') as String ?: "should be in different file"
-                    password findProperty('sonatypePassword') as String ?: "should be in different file"
-                }
-            }
+        println "\n** Environment [System.getenv()], sorted:\n"
+        System.env.sort().each { k, v ->
+            println("$k = $v")
         }
+        println ''
+        println "** Charset.defaultCharset(): " + Charset.defaultCharset()
+        println ''
+        println "** Java Version:   " + System.getProperty("java.version")
+        println "** Groovy Version: " + GroovySystem.getVersion()
+        println "** Gradle Version: " + gradleVersion
     }
-
-    // Tasks to publish to Sonatype's OSSRH (OSS Repository Hosting), Snapshot and Staging
-    tasks.register('matsPublishSnapshot') { dependsOn publishAllPublicationsToSonatypeOSSRHSnapshotRepository }
-    tasks.register('matsPublishStaging') { dependsOn publishAllPublicationsToSonatypeOSSRHStagingRepository }
 }

@@ -1,6 +1,14 @@
-// MatsBrokerInterface SPI
+// MatsBrokerMonitor API
 
 dependencies {
     // Logging.
     compileOnly "org.slf4j:slf4j-api:$slf4jVersion"
+}
+
+mavenPublishing {
+    pom {
+        name = 'MatsBrokerMonitor API'
+        description = 'Defines two APIs: MatsBrokerMonitor (queue lengths, age of head message, etc.) and' +
+                ' MatsBrokerBrowseAndActions (browse, reissue messages, etc.)'
+    }
 }

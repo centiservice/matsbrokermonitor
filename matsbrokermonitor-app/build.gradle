@@ -1,4 +1,4 @@
-
+// MBM App
 
 dependencies {
     api "io.mats3:mats-api:$matsVersion"
@@ -34,5 +34,12 @@ configurations.all {
         if (details.requested.group == 'org.springframework') {
             details.useVersion "$springVersion"
         }
+    }
+}
+
+mavenPublishing {
+    pom {
+        name = 'MatsBrokerMonitor App TBD'
+        description = 'TBD: An app for simple hosting of the embeddable MatsBrokerMonitor HTML GUI.'
     }
 }

@@ -1,3 +1,5 @@
+// MBM Storebrand HealthCheck implementation
+
 dependencies {
     api "io.mats3:mats-api:$matsVersion" // install(..) method use MatsFactory
     api "com.storebrand.healthcheck:healthcheck-api:$stbHealthCheckVersion"// install(..) method use HealthCheckRegistry
@@ -6,4 +8,13 @@ dependencies {
     implementation project(":matsbrokermonitor-api")
 
     compileOnly "org.slf4j:slf4j-api:$slf4jVersion"
+}
+
+mavenPublishing {
+    pom {
+        name = 'MatsBrokerMonitor Storebrand HealthCheck'
+        description = 'Single-class, simple implementation of Storebrand\'s HealthCheck solution (actuator-alike) for' +
+                ' a MatsFactory on a microservice. Relies on the \'matsbrokermonitor-broadcastreceiver\' module to' +
+                ' receive updates on queue lengths, DLQs, and age of head messages.'
+    }
 }

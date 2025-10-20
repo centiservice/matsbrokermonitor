@@ -1,5 +1,4 @@
-// HTML GUI
-
+// MBM HTML GUI
 
 dependencies {
     api project(":matsbrokermonitor-api")
@@ -56,4 +55,13 @@ dependencies {
     testCompileOnly "org.slf4j:slf4j-api:$slf4jVersion"
     testRuntimeOnly "org.slf4j:log4j-over-slf4j:$slf4jVersion"
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+}
+
+mavenPublishing {
+    pom {
+        name = 'MatsBrokerMonitor HTML GUI'
+        description = 'Embeddable HTML GUI which utilizes an instance each of MatsBrokerMonitor and' +
+                ' MatsBrokerBrowseAndActions to provide extensive monitor and control functionality of the message' +
+                ' broker constituting the Mats Fabric.'
+    }
 }

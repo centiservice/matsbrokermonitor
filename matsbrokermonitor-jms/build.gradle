@@ -1,4 +1,4 @@
-// matsbrokermonitor-jms
+// MBM JMS impl of MatsBrokerBrowseAndActions
 
 dependencies {
     api project(":matsbrokermonitor-api") // JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
@@ -8,4 +8,11 @@ dependencies {
 
     // TEST
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+}
+
+mavenPublishing {
+    pom {
+        name = 'MatsBrokerMonitor JMS'
+        description = 'JMS implementation of MatsBrokerBrowseAndActions (browse, reissue, delete messages, etc..)'
+    }
 }

@@ -1,4 +1,4 @@
-// MatsBrokerInterface for ActiveMQ
+// MBM ActiveMQ impl of MatsBrokerMonitor
 
 dependencies {
     api project(":matsbrokermonitor-api")
@@ -18,6 +18,11 @@ dependencies {
     testImplementation "org.apache.activemq:activemq-broker:$activeMqVersion"
     // JUnit
     testImplementation "junit:junit:$junitVersion"
+}
 
-
+mavenPublishing {
+    pom {
+        name = 'MatsBrokerMonitor ActiveMQ'
+        description = 'ActiveMQ specific implementation of MatsBrokerMonitor (queue lengths, age of head message etc.)'
+    }
 }
