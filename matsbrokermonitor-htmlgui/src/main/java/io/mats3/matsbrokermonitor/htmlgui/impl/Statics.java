@@ -106,7 +106,7 @@ public interface Statics {
         mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 
         // Drop nulls
-        mapper.setSerializationInclusion(Include.NON_NULL);
+        mapper.setDefaultPropertyInclusion(Include.NON_NULL);
 
         // If props are in JSON that aren't in Java DTO, do not fail.
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
