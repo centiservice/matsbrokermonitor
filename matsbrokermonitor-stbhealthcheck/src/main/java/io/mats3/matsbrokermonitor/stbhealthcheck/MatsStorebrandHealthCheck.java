@@ -293,20 +293,20 @@ public class MatsStorebrandHealthCheck {
 
                         // ?: Are we clean?
                         if (numBadStages == 0) {
-                            // -> Yes, clean - no DLQs.
+                            // -> Yes, clean - no old.
                             return checkContext.ok("== Old: All good, no stages with too old messages!");
                         }
-                        // E-> No, we have old messages
+                        // E-> No we're not clean; We have old messages present.
 
                         CheckResult fault = checkContext.fault("There are " + numBadStages + " stage"
                                 + (numBadStages > 1 ? "s" : "") + " with messages above age limit,"
                                 + " max age: " + durationFormat(Duration.ofMillis(oldest)));
-                        if (!veryOldPresent) {
-                            checkContext.text("There are OLD messages: DEGRADED_PARTIAL!");
-                            fault.turnOffAxes(Axis.CRITICAL_WAKE_PEOPLE_UP);
+                        if (veryOldPresent) {
+                            checkContext.text("There are VERY OLD messages: CRITICAL!");
                         }
                         else {
-                            checkContext.text("There are VERY OLD messages: CRITICAL!");
+                            checkContext.text("There are OLD messages: DEGRADED_PARTIAL!");
+                            fault.turnOffAxes(Axis.CRITICAL_WAKE_PEOPLE_UP);
                         }
                         checkContext.text("You must find out why the consumers are slow, and/or why queues build up!");
 
