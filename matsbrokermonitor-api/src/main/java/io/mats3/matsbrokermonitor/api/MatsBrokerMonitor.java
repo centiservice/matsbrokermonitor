@@ -40,6 +40,10 @@ import java.util.function.Consumer;
  * @author Endre Stølsvik 2021-12-16 23:10 - http://stolsvik.com/, endre@stolsvik.com
  */
 public interface MatsBrokerMonitor extends Closeable {
+    /**
+     * @return the name and version of the implementation, separated by a comma.
+     */
+    String getImplementationNameAndVersion();
 
     void start();
 

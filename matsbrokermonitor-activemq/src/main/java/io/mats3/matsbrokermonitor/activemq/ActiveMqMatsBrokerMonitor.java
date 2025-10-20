@@ -28,6 +28,10 @@ import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination.St
  * @author Endre Stølsvik 2021-12-27 14:40 - http://stolsvik.com/, endre@stolsvik.com
  */
 public class ActiveMqMatsBrokerMonitor implements MatsBrokerMonitor, Statics {
+    private static final String IMPLEMENTATION_VERSION = "1.1.1+2025-10-20";
+    public static final String IMPLEMENTATION_VERSION_NAME_AND_VERSION = "Mats3 ActiveMQ MatsBrokerMonitor,"
+            + IMPLEMENTATION_VERSION;
+
     private static final Logger log = LoggerFactory.getLogger(ActiveMqMatsBrokerMonitor.class);
 
     private final ActiveMqBrokerStatsQuerier _querier;
@@ -125,6 +129,11 @@ public class ActiveMqMatsBrokerMonitor implements MatsBrokerMonitor, Statics {
         _querier.registerListener(this::eventFromQuerier);
 
         _matsDestinationPrefix = matsDestinationPrefix;
+    }
+
+    @Override
+    public String getImplementationNameAndVersion() {
+        return IMPLEMENTATION_VERSION_NAME_AND_VERSION;
     }
 
     @Override

@@ -31,6 +31,10 @@ import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination.St
  * @author Endre Stølsvik 2022-01-15 23:04 - http://stolsvik.com/, endre@stolsvik.com
  */
 public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions, Statics {
+    private static final String IMPLEMENTATION_VERSION = "1.1.1+2025-10-20";
+    public static final String IMPLEMENTATION_VERSION_NAME_AND_VERSION = "Mats3 JMS MatsBrokerBrowseAndActions,"
+            + IMPLEMENTATION_VERSION;
+
     private static final Logger log = LoggerFactory.getLogger(JmsMatsBrokerBrowseAndActions.class);
 
     private final JmsConnectionHolder _jmsConnectionHolder;
@@ -57,6 +61,11 @@ public class JmsMatsBrokerBrowseAndActions implements MatsBrokerBrowseAndActions
         _jmsConnectionHolder = new JmsConnectionHolder(connectionFactory);
         _matsDestinationPrefix = matsDestinationPrefix;
         _matsTraceKey = matsTraceKey;
+    }
+
+    @Override
+    public String getImplementationNameAndVersion() {
+        return IMPLEMENTATION_VERSION_NAME_AND_VERSION;
     }
 
     @Override

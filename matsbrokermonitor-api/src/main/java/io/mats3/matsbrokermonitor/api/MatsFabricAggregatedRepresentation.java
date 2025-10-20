@@ -28,7 +28,9 @@ import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination.St
  * Consumes the info from {@link MatsBrokerMonitor} (all its {@link MatsBrokerDestination MatsBrokerDestination}
  * instances), and stacks it up in a Mats fabric-relevant representation: {@link MatsEndpointGroupBrokerRepresentation
  * Endpoint Groups}, consisting of {@link MatsEndpointBrokerRepresentation Endpoints}, consisting of
- * {@link MatsStageBrokerRepresentation Stages}.
+ * {@link MatsStageBrokerRepresentation Stages} - invoke the static method {@link #stack(Collection) stack} method to
+ * get the representation. Any remaining destinations (i.e. those which are not part of any Endpoint) are returned in
+ * {@link #getRemainingDestinations()}, and there are other methods to get default DLQ etc.
  *
  * @author Endre Stølsvik 2022-01-07 00:36, 2024-04-08 21:43 - http://stolsvik.com/, endre@stolsvik.com
  */

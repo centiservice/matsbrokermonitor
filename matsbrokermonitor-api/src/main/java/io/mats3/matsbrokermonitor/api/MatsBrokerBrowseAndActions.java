@@ -22,6 +22,10 @@ import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination.St
  * @author Endre Stølsvik 2022-01-15 00:08 - http://stolsvik.com/, endre@stolsvik.com
  */
 public interface MatsBrokerBrowseAndActions extends Closeable {
+    /**
+     * @return the name and version of the implementation, separated by a comma.
+     */
+    String getImplementationNameAndVersion();
 
     /**
      * Synthetic DLQ for failed operations (reissue or mute) where we could not determine original queue. We have very
