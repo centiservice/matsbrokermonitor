@@ -94,12 +94,15 @@ Release types / SemVer tags:
     * Suffix `+<iso date>` to the version.  
       example: `1.0.0+2025-10-16`
 
-### Transcript of a successful RC publish:
+### Transcript of a successful publish:
 
 #### Change version number and build:
 
-Change version in `build.gradle`, `ActiveMqMatsBrokerMonitor.java` and `JmsMatsBrokerBrowseAndActions` to relevant
-(RC) version! Read above on the version string format.
+* Change version in `build.gradle`, `ActiveMqMatsBrokerMonitor.java` and `JmsMatsBrokerBrowseAndActions` to relevant
+  (RC) version! Read above on the version string format.
+
+* See over [CHANGELOG.md](CHANGELOG.md): Update with version and notable changes.  
+  "Coalesce" any non-release versions into the final release.
 
 Build and test:
 ```bash
@@ -108,8 +111,7 @@ $ ./gradlew clean build
 
 #### Commit and tag git:
 
-Commit the version bump (both package.json and MatsSocket.js), message shall read ala: _(Note "Candidate" in the message:
-Remove it if not!)_
+Commit the version bump, message shall read ala: _(Note "Candidate" in the message: Remove it if not!)_  
 `Release Candidate: RC-1.0.0.RC5+2025-05-20  (from RC-1.0.0.RC4+2025-05-15)`
 
 Tag git, and push, and push tags. _(Note the "Candidate" in the message: Remove it if not!)_
