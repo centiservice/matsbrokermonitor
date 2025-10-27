@@ -28,7 +28,7 @@ import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.MatsBrokerDestination.St
  * @author Endre Stølsvik 2021-12-27 14:40 - http://stolsvik.com/, endre@stolsvik.com
  */
 public class ActiveMqMatsBrokerMonitor implements MatsBrokerMonitor, Statics {
-    private static final String IMPLEMENTATION_VERSION = "1.1.1+2025-10-20";
+    private static final String IMPLEMENTATION_VERSION = "B-2.0.0.B0+2025-10-27";
     public static final String IMPLEMENTATION_VERSION_NAME_AND_VERSION = "Mats3 ActiveMQ MatsBrokerMonitor,"
             + IMPLEMENTATION_VERSION;
 
