@@ -3,6 +3,10 @@
 Monitoring of a message broker for Mats-relevant Queues, Topics and Dead Letter Queues. The project provides both an API
 and implementation to gather such information, and an embeddable HTML GUI to introspect and act on messages.
 
+Versioning:
+* **v2**: Java 21+, `jakarta.jms`
+* **v1**: Java 11+, `javax.jms`
+
 ## Development of this project
 
 Go to [README-development.md](README-development.md), which also contains a description of each module's purpose.
