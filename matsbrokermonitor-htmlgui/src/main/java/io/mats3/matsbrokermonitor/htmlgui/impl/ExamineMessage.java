@@ -19,9 +19,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.mats3.matsbrokermonitor.api.MatsBrokerBrowseAndActions;
 import io.mats3.matsbrokermonitor.api.MatsBrokerBrowseAndActions.BrokerIOException;
 import io.mats3.matsbrokermonitor.api.MatsBrokerBrowseAndActions.MatsBrokerMessageRepresentation;
@@ -43,6 +40,9 @@ import io.mats3.serial.MatsTrace.Call.CallType;
 import io.mats3.serial.MatsTrace.Call.Channel;
 import io.mats3.serial.MatsTrace.KeepMatsTrace;
 import io.mats3.serial.MatsTrace.StackState;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * @author Endre Stølsvik 2022-03-13 23:33 - http://stolsvik.com/, endre@stolsvik.com
@@ -1228,7 +1228,7 @@ public class ExamineMessage {
                 String jsonData = new ObjectMapper().readTree(stringData).toPrettyString();
                 out.html("<div class='matsbm_box_call_or_state_div'>").DATA(jsonData).html("</div>\n");
             }
-            catch (JsonProcessingException e) {
+            catch (JacksonException e) {
                 out.html("Couldn't parse String as json (thus no pretty printing),"
                         + " so here it is unparsed.<br>");
                 out.html("<div class='matsbm_box_call_or_state_div'>").DATA(stringData).html("</div>\n");

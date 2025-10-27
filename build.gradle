@@ -7,7 +7,7 @@ plugins {
 
 // Customize the Gradle Wrapper generation task.
 wrapper {
-    gradleVersion = "8.14.3"
+    gradleVersion = "9.1.0"
     // Use "-all"-version of distribution, since IntelliJ works better then..
     setDistributionType(Wrapper.DistributionType.ALL)
 }
@@ -21,24 +21,23 @@ allprojects {
 
 // Versions for all libraries used throughout the subprojects
 ext {
-    matsVersion = '1.0.1+2025-10-20'
+    matsVersion = 'B-2.0.0.B0+2025-10-22'
 
     slf4jVersion = '2.0.17' // Only CompileOnly
-    jmsApiDependency = 'jakarta.jms:jakarta.jms-api:2.0.3' // Only CompileOnly. Version following Mats3's lead.
-    jacksonVersion = '2.20.0'
+    jmsVersion = '3.1.0'    // Only CompileOnly. Version following Mats3's lead.
+    jacksonVersion = '3.0.0'
 
     stbHealthCheckVersion = '0.4.1+2024-05-07' // For 'matsbrokermonitor-stb-healthcheck'
 
     // === For testing
-    activeMqVersion = '5.19.1'
-    springVersion = '5.3.39' // Spring 6 depends on Java 17 and Jakarta EE 9+
+    activeMqVersion = '6.1.7'
     junitVersion = '4.13.2'
     logbackVersion = '1.5.19'
-    jettyVersion = '9.4.58.v20250814'
+    jettyVersion = '12.1.2'
 }
 
 // :: Find which Java version to use for the toolchain.
-int javaVersion = 11;
+int javaVersion = 21;
 if (project.properties.containsKey('mats.build.java_version')) {
     javaVersion = Integer.parseInt((String) project.properties['mats.build.java_version'])
     println "Specified Java version for toolchain, using Java version: $javaVersion"
@@ -52,8 +51,8 @@ subprojects {
     repositories { mavenCentral() }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
 
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(javaVersion))

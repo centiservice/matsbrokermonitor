@@ -7,13 +7,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 /**
  * @author Endre Stølsvik 2022-03-13 23:36 - http://stolsvik.com/, endre@stolsvik.com
  */
@@ -71,8 +64,8 @@ public interface Statics {
             if (days > 0) {
                 buf.append(days).append("d");
             }
-            if ((hours > 0) || (buf.length() != 0)) {
-                if (buf.length() != 0) {
+            if ((hours > 0) || (!buf.isEmpty())) {
+                if (!buf.isEmpty()) {
                     buf.append(":");
                 }
                 buf.append(hours).append("h");
@@ -80,8 +73,8 @@ public interface Statics {
             // ?: Are we <1 day?
             if (millis < 24 * 60 * 60 * 1000) {
                 // -> Yes, then add minutes.
-                if ((minutes > 0) || (buf.length() != 0)) {
-                    if (buf.length() != 0) {
+                if ((minutes > 0) || (!buf.isEmpty())) {
+                    if (!buf.isEmpty()) {
                         buf.append(":");
                     }
                     buf.append(minutes).append("m");
@@ -90,30 +83,12 @@ public interface Statics {
             // ?: Are we <1 hour?
             if (millis < 60 * 60 * 1000) {
                 // -> Yes, then add seconds
-                if (buf.length() != 0) {
+                if (!buf.isEmpty()) {
                     buf.append(":");
                 }
                 buf.append(seconds).append("s");
             }
             return buf.toString();
         }
-    }
-
-    static ObjectMapper createMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        // Read and write any access modifier fields (e.g. private)
-        mapper.setVisibility(PropertyAccessor.ALL, Visibility.NONE);
-        mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-
-        // Drop nulls
-        mapper.setDefaultPropertyInclusion(Include.NON_NULL);
-
-        // If props are in JSON that aren't in Java DTO, do not fail.
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        // Write e.g. Dates as "1975-03-11" instead of timestamp, and instead of array-of-ints [1975, 3, 11].
-        // Uses ISO8601 with milliseconds and timezone (if present).
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        return mapper;
     }
 }

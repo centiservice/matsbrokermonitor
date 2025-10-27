@@ -73,7 +73,7 @@ using the test server.
 ## Publishing
 
 **NOTE: First update the version in root `build.gradle`, `ActiveMqMatsBrokerMonitor.java` and
-`JmsMatsBrokerBrowseAndActions`, read below for format per release type!**
+`JmsMatsBrokerBrowseAndActions.java`, read below for format per release type!**
 
 **Remember to git commit and tag the version bump before publishing, read below for git tag and message format!**
 

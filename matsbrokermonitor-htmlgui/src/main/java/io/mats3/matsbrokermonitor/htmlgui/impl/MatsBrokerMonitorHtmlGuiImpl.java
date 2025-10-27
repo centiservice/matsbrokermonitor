@@ -20,14 +20,15 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.mats3.matsbrokermonitor.api.MatsBrokerBrowseAndActions;
 import io.mats3.matsbrokermonitor.api.MatsBrokerBrowseAndActions.MatsBrokerMessageMetadata;
 import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor;
 import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.UpdateEvent;
 import io.mats3.matsbrokermonitor.htmlgui.MatsBrokerMonitorHtmlGui;
 import io.mats3.serial.MatsSerializer;
+import io.mats3.util.FieldBasedJacksonMapper;
+
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Instantiate a <b>singleton</b> of this class, supplying it a {@link MatsBrokerMonitor} instance, <b>to which this
@@ -206,7 +207,8 @@ public class MatsBrokerMonitorHtmlGuiImpl implements MatsBrokerMonitorHtmlGui, S
         return queueId;
     }
 
-    private static final ObjectMapper MAPPER = Statics.createMapper();
+    // Use Mats3's FieldBasedJacksonMapper creator, since we want the same logics.
+    private static final ObjectMapper MAPPER = FieldBasedJacksonMapper.createJacksonObjectMapper();
 
     @Override
     public void json(Appendable out, Map<String, String[]> requestParameters, String requestBody,
