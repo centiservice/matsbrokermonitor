@@ -1,6 +1,5 @@
 package io.mats3.matsbrokermonitor.broadcaster;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
@@ -30,13 +29,12 @@ import io.mats3.matsbrokermonitor.api.MatsBrokerMonitor.UpdateEvent;
  * <p>
  * <b>Note that life cycling of the provided MatsBrokerMonitor is handled by this class:</b> When the instance of this
  * class is {@link #start(MatsFactory) started} by the MatsFactory, it will invoke {@link MatsBrokerMonitor#start()
- * start} on the MatsBrokerMonitor, and when this instance is {@link #close() closed} by the MatsFactory, it will
+ * start} on the MatsBrokerMonitor, and when this instance is {@link #preStop() pre-stopped} by the MatsFactory, it will
  * {@link MatsBrokerMonitor#close() close} the MatsBrokerMonitor.
  *
- * 
  * @author Endre Stølsvik 2022-11-12 10:33 - http://stolsvik.com/, endre@stolsvik.com
  */
-public class MatsBrokerMonitorBroadcastAndControl implements Closeable, MatsPlugin {
+public class MatsBrokerMonitorBroadcastAndControl implements MatsPlugin {
     private static final Logger log = LoggerFactory.getLogger(MatsBrokerMonitorBroadcastAndControl.class);
 
     /**
@@ -54,12 +52,21 @@ public class MatsBrokerMonitorBroadcastAndControl implements Closeable, MatsPlug
     public static final String MATSBROKERMONITOR_CONTROL = "mats.MatsBrokerMonitor.control";
 
     /**
-     * Copied from MatsInterceptable.MatsLoggingInterceptor
+     * Copied from <code>MatsLoggingInterceptor</code>.
      * <p>
      * We don't want all these updates to be logged on all the JVMs carrying MatsFactories, as it will be annoying noise
      * without much merit.
      */
     private static final String SUPPRESS_LOGGING_TRACE_PROPERTY_KEY = "mats.SuppressLogging";
+
+    /**
+     * Copied from <code>MatsMetricsInterceptor</code>.
+     * <p>
+     * We don't want all these updates to be counted in the metrics, as it will make a "background noise" for all
+     * services, which have little merit.
+     */
+    private static final String SUPPRESS_METRICS_TRACE_PROPERTY_KEY = "mats.SuppressMetrics";
+
 
     private final MatsBrokerMonitor _matsBrokerMonitor;
 
@@ -68,8 +75,8 @@ public class MatsBrokerMonitorBroadcastAndControl implements Closeable, MatsPlug
      * provided {@link MatsFactory}, and returns the instance - <b>Note that lifecycling of the provided
      * {@link MatsBrokerMonitor} is handled by this class:</b> When this instance is {@link #start(MatsFactory) started}
      * by the MatsFactory, it will invoke {@link MatsBrokerMonitor#start() start} on the MatsBrokerMonitor, and when
-     * this instance is {@link #close() closed} by the MatsFactory, it will {@link MatsBrokerMonitor#close() close} the
-     * MatsBrokerMonitor.
+     * this instance is {@link #preStop() pre-stopped} by the MatsFactory, it will
+     * {@link MatsBrokerMonitor#close() close} the MatsBrokerMonitor.
      * 
      * @param matsBrokerMonitor
      *            the {@link MatsBrokerMonitor} to listen to - note that life-cycle of this instance is managed by this
@@ -111,7 +118,9 @@ public class MatsBrokerMonitorBroadcastAndControl implements Closeable, MatsPlug
                         .traceId("MatsBrokerMonitorBroadcastUpdate:"
                                 + Long.toString(Math.abs(ThreadLocalRandom.current().nextLong()), 36))
                         .from("MatsBrokerMonitorBroadcaster")
+                        // Suppress logging and metrics for this "system message"
                         .setTraceProperty(SUPPRESS_LOGGING_TRACE_PROPERTY_KEY, Boolean.TRUE)
+                        .setTraceProperty(SUPPRESS_METRICS_TRACE_PROPERTY_KEY, Boolean.TRUE)
                         .to(BROADCAST_UPDATE_EVENT_TOPIC_ENDPOINT_ID)
                         .publish(dto));
             }
@@ -155,13 +164,6 @@ public class MatsBrokerMonitorBroadcastAndControl implements Closeable, MatsPlug
         _matsBrokerMonitor.removeListener(_eventUpdateListener);
         // .. and close the MatsBrokerMonitor, as per contract in JavaDoc.
         _matsBrokerMonitor.close();
-    }
-
-    // TODO: Remove ASAP, once users have removed their call. Latest 2025.
-    @Override
-    public void close() {
-        log.error("DO NOT INVOKE THIS METHOD!", new Exception("This method is deprecated -"
-                + " the MatsFactory will handle it, by invoking preStop() and stop()."));
     }
 
     private MatsBrokerMonitorBroadcastAndControl(MatsBrokerMonitor matsBrokerMonitor, MatsFactory matsFactory) {

@@ -33,7 +33,7 @@ public class MatsBrokerMonitorBroadcastReceiver implements MatsPlugin {
     private static final Logger log = LoggerFactory.getLogger(MatsBrokerMonitorBroadcastReceiver.class);
 
     /**
-     * Copied from MatsBrokerMonitorBroadcastAndControl
+     * Copied from <code>MatsBrokerMonitorBroadcastAndControl</code>.
      * <p>
      * The EndpointId to which the update event is published.
      * <p>
@@ -42,7 +42,7 @@ public class MatsBrokerMonitorBroadcastReceiver implements MatsPlugin {
     private static final String BROADCAST_UPDATE_EVENT_TOPIC_ENDPOINT_ID = "mats.MatsBrokerMonitor.broadcastUpdate";
 
     /**
-     * Copied from MatsBrokerMonitorBroadcastAndControl
+     * Copied from <code>MatsBrokerMonitorBroadcastAndControl</code>.
      * <p>
      * The EndpointId to which one may request operations, currently forceUpdate.
      * <p>
@@ -51,11 +51,18 @@ public class MatsBrokerMonitorBroadcastReceiver implements MatsPlugin {
     public static final String MATSBROKERMONITOR_CONTROL = "mats.MatsBrokerMonitor.control";
 
     /**
-     * Copied from MatsInterceptable.MatsLoggingInterceptor.
+     * Copied from <code>MatsMetricsInterceptor</code>.
+     * <p>
+     * We accept that this won't be added to metrics, as it will be annoying noise without much merit.
+     */
+    private static final String SUPPRESS_LOGGING_ENDPOINT_ALLOWS_ATTRIBUTE_KEY = "mats.SuppressLoggingAllowed";
+
+    /**
+     * Copied from <code>MatsLoggingInterceptor</code>.
      * <p>
      * We accept that this won't be logged, as it will be annoying noise without much merit.
      */
-    private static final String SUPPRESS_LOGGING_ENDPOINT_ALLOWS_ATTRIBUTE_KEY = "mats.SuppressLoggingAllowed";
+    private static final String SUPPRESS_METRICS_ENDPOINT_ALLOWS_ATTRIBUTE_KEY = "mats.SuppressMetricsAllowed";
 
     private MatsEndpoint<Void, Void> _broadcastReceiver;
 
@@ -152,10 +159,11 @@ public class MatsBrokerMonitorBroadcastReceiver implements MatsPlugin {
                         }
                     }
                 });
-        // :: We don't want this to be logged, as it will be annoying noise without much merit.
-        // Allow for log suppression for this SubscriptionTerminator
-        _broadcastReceiver.getEndpointConfig().setAttribute(SUPPRESS_LOGGING_ENDPOINT_ALLOWS_ATTRIBUTE_KEY,
-                Boolean.TRUE);
+        // :: We don't want this to be logged and measured (metrics), as it will be annoying noise without much merit.
+        // Allow for log and metrics suppression for this SubscriptionTerminator
+        _broadcastReceiver.getEndpointConfig()
+                .setAttribute(SUPPRESS_LOGGING_ENDPOINT_ALLOWS_ATTRIBUTE_KEY, Boolean.TRUE)
+                .setAttribute(SUPPRESS_METRICS_ENDPOINT_ALLOWS_ATTRIBUTE_KEY, Boolean.TRUE);
     }
 
     @Override
