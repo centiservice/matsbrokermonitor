@@ -1,20 +1,20 @@
-## B-2.0.0.B0+2025-10-27
-
-Notice: MatsBrokerMonitor Beta 2.0 series will require Mats<sup>3</sup> 2.0 too, which as of writing also is
-in Beta.
+## 2.0.0+2025-11-01
 
 * New major version, due to Java 21 and Jakarta namespaces.
 * **Moved over to jakarta-namespace for all javax libraries, most notably JMS.**
 * **V2-series will require Java 21.**
-* _Beta-temp: Depending on Mats<sup>3</sup> version `B-2.0.0.B0+2025-10-22`_
-* Upgraded to Gradle 9.1.0. Finally, no "Deprecated Gradle features were used in this build..."!
-* All dependencies upgraded, now past the Java 17+ requiring libs.
-* Core (Mats<sup>3</sup> implementation):
-    * JMS 3.1.0
-    * Jackson 3.0.0
-* For testing:
-    * ActiveMQ 6.1.7
-    * Jetty 12.1.2
+* All dependencies upgraded. Both wrt. the jakarta-change, and past Java 17-requiring libs.
+* Core:
+  * Jakarta JMS 3.1.0
+  * Jackson 3.0.1
+  * SLF4J 2.0.17
+* HealthCheck:
+  * Storebrand HealthCheck 0.4.1+2024-05-07
+* "Dev dependencies":
+  * ActiveMQ 6.1.8
+  * Jetty 12.1.3, w/ _ee11_, Jakarta Servlet 6.1.0
+  * Logback 1.5.20
+* Upgraded to Gradle 9.2.0. Finally, no "Deprecated Gradle features were used in this build..."!
 
 ## 1.1.1+2025-10-20
 

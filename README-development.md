@@ -98,8 +98,8 @@ Release types / SemVer tags:
 
 #### Change version number and build:
 
-* Change version in `build.gradle`, `ActiveMqMatsBrokerMonitor.java` and `JmsMatsBrokerBrowseAndActions` to relevant
-  (RC) version! Read above on the version string format.
+* Change version in `build.gradle`, `ActiveMqMatsBrokerMonitor.java` and `JmsMatsBrokerBrowseAndActions.java` to
+  relevant (RC) version! Read above on the version string format.
 
 * See over [CHANGELOG.md](CHANGELOG.md): Update with version and notable changes.  
   "Coalesce" any non-release versions into the final release.
