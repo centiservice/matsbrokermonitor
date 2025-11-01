@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 /**
  * Provides a way to get data from the broker which is not possible to glean from the Mats3 system itself, nor from
  * standard ways by the JMS API (or any other known messaging protocol).
- * <p />
+ * <p>
  * These data are:
  * <ul>
  * <li>Which destinations exist, and whether they are queues and topics (however, the total number of Mats endpoints can

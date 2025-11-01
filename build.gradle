@@ -3,11 +3,12 @@
 plugins {
     id 'java-library'
     id "com.vanniktech.maven.publish" version "0.34.0" // Publish to Maven Central, over Portal Publisher API
+    id "com.github.ben-manes.versions" version "0.53.0" // Checks dependencies.
 }
 
 // Customize the Gradle Wrapper generation task.
 wrapper {
-    gradleVersion = "9.1.0"
+    gradleVersion = "9.2.0"
     // Use "-all"-version of distribution, since IntelliJ works better then..
     setDistributionType(Wrapper.DistributionType.ALL)
 }
@@ -21,19 +22,19 @@ allprojects {
 
 // Versions for all libraries used throughout the subprojects
 ext {
-    matsVersion = 'B-2.0.0.B0+2025-10-22'
+    matsVersion = '2.0.0+2025-11-01'
 
-    slf4jVersion = '2.0.17' // Only CompileOnly
-    jmsVersion = '3.1.0'    // Only CompileOnly. Version following Mats3's lead.
-    jacksonVersion = '3.0.0'
+    slf4jVersion = '2.0.17'     // Only CompileOnly
+    jakartaJmsVersion = '3.1.0' // Only CompileOnly. Version following Mats3's lead.
+    jacksonVersion = '3.0.1'
 
     stbHealthCheckVersion = '0.4.1+2024-05-07' // For 'matsbrokermonitor-stb-healthcheck'
 
     // === For testing
-    activeMqVersion = '6.1.7'
+    activeMqVersion = '6.1.8'
     junitVersion = '4.13.2'
-    logbackVersion = '1.5.19'
-    jettyVersion = '12.1.2'
+    logbackVersion = '1.5.20'
+    jettyVersion = '12.1.3'
 }
 
 // :: Find which Java version to use for the toolchain.
@@ -41,6 +42,13 @@ int javaVersion = 21;
 if (project.properties.containsKey('mats.build.java_version')) {
     javaVersion = Integer.parseInt((String) project.properties['mats.build.java_version'])
     println "Specified Java version for toolchain, using Java version: $javaVersion"
+}
+
+// Check dependencies: `./gradlew dependencyUpdates --refresh-dependencies --no-parallel`
+tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+        return ['RC', 'CR', '-M', 'ALPHA'].any { bad -> it.candidate.version.toUpperCase().contains(bad) }
+    }
 }
 
 // Common for all subprojects

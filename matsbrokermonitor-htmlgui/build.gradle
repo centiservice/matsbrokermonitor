@@ -38,7 +38,7 @@ dependencies {
     testImplementation "com.storebrand.healthcheck:healthcheck-output:$stbHealthCheckVersion"
 
     // JMS API
-    testCompileOnly "jakarta.jms:jakarta.jms-api:$jmsVersion"
+    testCompileOnly "jakarta.jms:jakarta.jms-api:$jakartaJmsVersion"
     // MatsTestBroker
     testImplementation "io.mats3:mats-test-broker:$matsVersion"
     // Must manually drag in ActiveMq broker
